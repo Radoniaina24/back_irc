@@ -4,10 +4,10 @@ const verifyToken = require("../utils/verifyToken");
 
 async function isLoggedIn(req, res, next) {
   //recuperation du token
-  // const token = getTokenFromHeader(req);
+  const token = getTokenFromHeader(req);
   // console.log("token :", tokenCookies);
   try {
-    const token = req.cookies.refreshToken; // Récupération du token via le cookie sécurisé
+    // const token = req.cookies.refreshToken; // Récupération du token via le cookie sécurisé
     if (!token) {
       return res.status(401).json({ message: "Accès refusé, token manquant" });
     }

@@ -47,7 +47,6 @@ const getAllUsers = async (req, res) => {
 };
 
 const getUserById = async (req, res) => {
-  console.log(req);
   try {
     const user = await User.findById(req.params.id).select("-password");
     if (!user)

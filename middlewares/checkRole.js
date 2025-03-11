@@ -9,14 +9,14 @@ const checkRole = (allowedRoles) => {
       if (!req.user) {
         return res
           .status(401)
-          .json({ message: "Unauthorized access, unauthenticated user" });
+          .json({ message: "Accès non autorisé, utilisateur non authentifié" });
       }
 
       if (!allowedRoles.includes(req.user.role)) {
         // logger?.warn(`Accès refusé pour l'utilisateur ${req.user.email} (rôle: ${req.user.role})`);
         return res
           .status(403)
-          .json({ message: "Access prohibited, role insufficient" });
+          .json({ message: "Accès interdit, rôle insuffisant" });
       }
 
       next(); // L'utilisateur a le bon rôle, on continue la requête

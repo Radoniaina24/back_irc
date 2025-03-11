@@ -18,6 +18,7 @@ const dbConnect = require("./config/dbConnect");
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const recruiterRoutes = require("./routes/recruiterRoutes");
+const jobPostRoutes = require("./routes/jobPostRoutes");
 
 const port = process.env.PORT;
 dbConnect();
@@ -30,6 +31,7 @@ app.listen(port, () => {
 app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/recruiter", recruiterRoutes);
+app.use("/api/jobPost", jobPostRoutes);
 
 //Gestion des erreurs
 app.use(notFound);

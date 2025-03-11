@@ -1,16 +1,35 @@
 const asyncHandler = require("express-async-handler");
 const express = require("express");
+const isLoggedIn = require("../middlewares/isLoggedIn");
+const checkRole = require("../middlewares/checkRole");
 const candidateRoutes = express.Router();
 const candidateController = require("../controllers/CandidateController");
-candidateRoutes.get("/", asyncHandler(candidateController.getAllCandidates));
-candidateRoutes.get("/:id", candidateController.getCandidateById);
+candidateRoutes.get(
+  "/",
+  isLoggedIn,
+  checkRole(["admin"]),
+  asyncHandler(candidateController.getAllCandidates)
+);
+candidateRoutes.get(
+  "/:id",
+  isLoggedIn,
+  checkRole(["admin"]),
+  candidateController.getCandidateById
+);
 candidateRoutes.post(
   "/register",
   asyncHandler(candidateController.createCandidate)
 );
 candidateRoutes.put(
   "/update/:id",
+  isLoggedIn,
+  checkRole(["admin, candidate"]),
   asyncHandler(candidateController.updateCandidate)
 );
-candidateRoutes.delete("/delete/:id", candidateController.deleteCandidate);
+candidateRoutes.delete(
+  "/delete/:id",
+  isLoggedIn,
+  checkRole(["admin"]),
+  candidateController.deleteCandidate
+);
 module.exports = candidateRoutes;

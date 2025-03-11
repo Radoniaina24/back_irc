@@ -140,6 +140,41 @@ const deleteJobPost = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+const updateJobPost = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { title } = req.body;
+
+    // Trouver le recruteur associé
+    const recruiter = await Recruiter.findOne({ user: userId });
+    if (!recruiter) {
+      return res
+        .status(403)
+        .json({ message: "Accès refusé. Recruteur requis." });
+    }
+
+    // Vérifier que l'annonce appartient bien au recruteur
+    const jobPost = await JobPost.findOne({
+      _id: id,
+      recruiter: recruiter._id,
+    });
+    if (!jobPost) {
+      return res
+        .status(404)
+        .json({ message: "Annonce introuvable ou non autorisée." });
+    }
+
+    // Mise à jour des champs fournis
+    jobPost.title = title || jobPost.title;
+    await jobPost.save();
+    res
+      .status(200)
+      .json({ message: "Annonce mise à jour avec succès", jobPost });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
 
 module.exports = {
   createJobPost,
@@ -147,4 +182,5 @@ module.exports = {
   getAllJobPosts,
   getJobPostById,
   deleteJobPost,
+  updateJobPost,
 };

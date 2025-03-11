@@ -22,6 +22,12 @@ jobPostRoutes.delete(
   checkRole(["recruiter"]),
   asyncHandler(jobPostContollers.deleteJobPost)
 );
+jobPostRoutes.put(
+  "/update/:id",
+  isLoggedIn,
+  checkRole(["recruiter"]),
+  asyncHandler(jobPostContollers.updateJobPost)
+);
 jobPostRoutes.get("/:id", asyncHandler(jobPostContollers.getJobPostById));
 jobPostRoutes.get("/", asyncHandler(jobPostContollers.getAllJobPosts));
 module.exports = jobPostRoutes;

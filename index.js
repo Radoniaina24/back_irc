@@ -31,7 +31,7 @@ app.listen(port, () => {
 app.use("/api/user", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/recruiter", recruiterRoutes);
-app.use("/api/jobPost", jobPostRoutes);
+app.use("/api/job-posts", jobPostRoutes);
 
 //Gestion des erreurs
 app.use(notFound);

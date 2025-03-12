@@ -8,11 +8,6 @@ const recruiterSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    society: {
-      type: String,
-      required: [true, "Le nom de la société est requis"],
-      trim: true,
-    },
     function: {
       type: String,
       trim: true,

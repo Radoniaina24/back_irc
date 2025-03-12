@@ -23,8 +23,14 @@ recruiterRoutes.post(
 recruiterRoutes.put(
   "/update/:id",
   isLoggedIn,
-  checkRole(["admin", "recruiter"]),
+  checkRole(["admin"]),
   asyncHandler(recruiterContollers.updateRecruiter)
+);
+recruiterRoutes.put(
+  "/update",
+  isLoggedIn,
+  checkRole(["recruiter"]),
+  asyncHandler(recruiterContollers.updateProfilRecruiter)
 );
 recruiterRoutes.delete(
   "/delete/:id",

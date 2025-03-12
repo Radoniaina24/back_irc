@@ -13,6 +13,13 @@ const recruiterSchema = new mongoose.Schema(
       required: [true, "Le nom de la société est requis"],
       trim: true,
     },
+    function: {
+      type: String,
+      trim: true,
+    },
+    phone: {
+      type: String,
+    },
   },
   {
     timestamps: true,

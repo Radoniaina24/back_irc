@@ -3,19 +3,21 @@ const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const createRecruiter = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role, society } = req.body;
-
-    // Vérification du rôle
-    if (!["admin", "recruiter", "candidate"].includes(role)) {
-      return res.status(400).json({ message: "Rôle invalide" });
-    }
-
+    const { firstName, lastName, email, password, society } = req.body;
+    const role = "recruiter";
     // Vérification si l'email est déjà utilisé
     const userExist = await User.findOne({ email });
     if (userExist) {
       return res.status(400).json({ message: "Email déjà utilisé" });
     }
-
+    // Si le rôle est recruteur, créer une entrée dans la collection Recruiter
+    if (role === "recruiter") {
+      if (!society) {
+        return res.status(400).json({
+          message: "Le nom de la société est requis pour un recruteur",
+        });
+      }
+    }
     // Création de l'utilisateur
     const user = new User({
       firstName,
@@ -25,16 +27,11 @@ const createRecruiter = async (req, res) => {
       role,
     });
     await user.save();
-    // Si le rôle est recruteur, créer une entrée dans la collection Recruiter
-    if (role === "recruiter") {
-      if (!society) {
-        return res.status(400).json({
-          message: "Le nom de la société est requis pour un recruteur",
-        });
-      }
-      // Création d'un recruteur associé à l'utilisateur
-      await Recruiter.create({ user: user._id, society });
-    }
+    // Création d'un recruteur associé à l'utilisateur
+    await Recruiter.create({
+      user: user._id,
+      society,
+    });
 
     // Réponse réussie
     res.status(201).json({ message: "Inscription réussie", user, society });

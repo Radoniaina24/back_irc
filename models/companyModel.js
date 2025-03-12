@@ -16,19 +16,13 @@ const companySchema = new mongoose.Schema(
       type: Number,
       required: false,
     },
-    headquarters: {
-      address: { type: String, required: false, trim: true },
-      city: { type: String, required: false, trim: true },
-      country: { type: String, required: false, trim: true },
-    },
+    address: { type: String, required: false, trim: true },
+    city: { type: String, required: false, trim: true },
+    country: { type: String, required: false, trim: true },
     website: {
       type: String,
       required: false,
       trim: true,
-      match: [
-        /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,})(\/\S*)?$/,
-        "Veuillez entrer une URL valide",
-      ],
     },
     logo: {
       type: String,

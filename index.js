@@ -22,6 +22,7 @@ const jobPostRoutes = require("./routes/jobPostRoutes");
 const candidateRoutes = require("./routes/candidateRoutes");
 const applicationRoutes = require("./routes/applicationRoutes");
 const companyRoutes = require("./routes/companyRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 
 const port = process.env.PORT;
 dbConnect();
@@ -38,6 +39,7 @@ app.use("/api/job-posts", jobPostRoutes);
 app.use("/api/candidate", candidateRoutes);
 app.use("/api/application", applicationRoutes);
 app.use("/api/company", companyRoutes);
+app.use("/api/category", categoryRoutes);
 
 //Gestion des erreurs
 app.use(notFound);

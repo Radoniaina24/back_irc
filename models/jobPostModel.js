@@ -11,6 +11,11 @@ const jobPostSchema = new mongoose.Schema(
       ref: "Recruiter",
       required: true,
     },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
   },
   { timestamps: true }
 );

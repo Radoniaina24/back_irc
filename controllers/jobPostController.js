@@ -1,11 +1,16 @@
 const JobPost = require("../models/jobPostModel");
 const Recruiter = require("../models/recruiterModel");
-
+const Category = require("../models/categoryModel");
 const createJobPost = async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, category } = req.body;
     const userId = req.user.id; // Récupéré via le middleware d'authentification
+    // Vérifier si le catégorie existe
+    const categorie = await Category.findById(category);
 
+    if (!categorie) {
+      return res.status(403).json({ message: "Cette catégorie n'éxiste pas." });
+    }
     // Vérifier si l'utilisateur est un recruteur
     const recruiter = await Recruiter.findOne({ user: userId });
 
@@ -18,6 +23,7 @@ const createJobPost = async (req, res) => {
     const jobPost = new JobPost({
       title,
       recruiter: recruiter._id,
+      category: categorie._id,
     });
     await jobPost.save();
     res.status(201).json({ message: "Annonce crée avec succès", jobPost });
@@ -50,7 +56,7 @@ const getMyJobPosts = async (req, res) => {
     const [totalJobPosts, jobPosts] = await Promise.all([
       JobPost.countDocuments({ recruiter: recruiter._id, ...searchQuery }),
       JobPost.find({ recruiter: recruiter._id, ...searchQuery })
-        .populate("recruiter")
+        .populate("category")
         .skip((page - 1) * limit)
         .limit(limit),
     ]);
@@ -70,20 +76,28 @@ const getMyJobPosts = async (req, res) => {
 const getAllJobPosts = async (req, res) => {
   try {
     // Récupérer toutes les annonces créées par ce recruteur
-    let { page = 1, limit = 10, search } = req.query;
+    let { page = 1, limit = 10, search, categoryId } = req.query;
 
     // Validation et conversion des paramètres en nombres
     page = Math.max(1, parseInt(page, 10) || 1);
     limit = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100)); // Limite à 100 max
 
-    const searchQuery = search
-      ? { $or: [{ title: { $regex: search, $options: "i" } }] }
-      : {};
+    // Construction du filtre de recherche
+    const filters = {};
+
+    if (search) {
+      filters.$or = [{ title: { $regex: search, $options: "i" } }];
+    }
+
+    if (categoryId) {
+      filters.category = categoryId; // Assurez-vous que 'category' est bien le champ dans votre modèle
+    }
     // Exécuter les requêtes en parallèle pour améliorer les performances
     const [totalJobPosts, jobPosts] = await Promise.all([
-      JobPost.countDocuments(searchQuery),
-      JobPost.find(searchQuery)
+      JobPost.countDocuments(filters),
+      JobPost.find(filters)
         .populate("recruiter")
+        .populate("category")
         .skip((page - 1) * limit)
         .limit(limit),
     ]);
@@ -142,10 +156,16 @@ const deleteJobPost = async (req, res) => {
 };
 const updateJobPost = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { id } = req.params;
-    const { title } = req.body;
+    const id = req.params.id;
+    const { title, category } = req.body;
+    const userId = req.user.id; // Récupéré via le middleware d'authentification
 
+    // Vérifier si le catégorie existe
+    const categorie = await Category.findById(category);
+
+    if (!categorie) {
+      return res.status(403).json({ message: "Cette catégorie n'éxiste pas." });
+    }
     // Trouver le recruteur associé
     const recruiter = await Recruiter.findOne({ user: userId });
     if (!recruiter) {
@@ -167,6 +187,7 @@ const updateJobPost = async (req, res) => {
 
     // Mise à jour des champs fournis
     jobPost.title = title || jobPost.title;
+    jobPost.category = categorie._id || jobPost.category;
     await jobPost.save();
     res
       .status(200)

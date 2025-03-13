@@ -10,6 +10,11 @@ const categorySchema = new mongoose.Schema(
       minlength: [2, "Le nom doit contenir au moins 2 caractères"],
       maxlength: [50, "Le nom ne peut pas dépasser 50 caractères"],
     },
+    sector: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Sector",
+      required: [true, "Le secteur associé est requis"],
+    },
   },
   { timestamps: true }
 );

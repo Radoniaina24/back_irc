@@ -32,4 +32,10 @@ candidateRoutes.delete(
   checkRole(["admin"]),
   candidateController.deleteCandidate
 );
+candidateRoutes.post(
+  "/change_password",
+  isLoggedIn,
+  checkRole(["candidate"]),
+  candidateController.changePassword
+);
 module.exports = candidateRoutes;

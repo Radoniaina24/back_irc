@@ -42,7 +42,6 @@ const applyToJob = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
-
 const getCandidateApplications = async (req, res) => {
   try {
     const candidateId = req.user.id;
@@ -61,6 +60,7 @@ const getCandidateApplications = async (req, res) => {
         .populate({
           path: "jobPost",
           populate: { path: "recruiter" },
+          populate: { path: "category" },
         })
         .skip((page - 1) * limit)
         .limit(limit),

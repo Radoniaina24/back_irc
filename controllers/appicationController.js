@@ -110,11 +110,33 @@ const getRecruiterApplications = async (req, res) => {
         .status(403)
         .json({ message: "Accès refusé. Recruteur requis." });
     }
-
-    // Récupérer toutes les candidatures pour les annonces du recruteur
-    const applications = await Application.find({ recruiter: recruiter._id })
-      .populate("candidate", "firstName lastName email")
-      .populate("jobPost", "title");
+    let { page = 1, limit = 10, search } = req.query;
+    // Validation et conversion des paramètres en nombres
+    page = Math.max(1, parseInt(page, 10) || 1);
+    limit = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100)); // Limite à 100 max
+    const searchQuery = search
+      ? { $or: [{ status: { $regex: search, $options: "i" } }] }
+      : {};
+    // Exécuter les requêtes en parallèle pour améliorer les performances
+    const [totalJobApplication, jobApplication] = await Promise.all([
+      Application.countDocuments({ recruiter: recruiter._id, ...searchQuery }),
+      Application.find({ recruiter: recruiter._id, ...searchQuery })
+        .populate("candidate")
+        .populate({
+          path: "jobPost",
+          populate: { path: "category" },
+        })
+        .skip((page - 1) * limit)
+        .limit(limit),
+    ]);
+    const totalPages = Math.ceil(totalJobApplication / limit);
+    res.status(200).json({
+      success: true,
+      totalJobApplication,
+      totalPages,
+      currentPage: page,
+      jobApplication,
+    });
 
     res.status(200).json(applications);
   } catch (error) {

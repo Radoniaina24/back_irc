@@ -2,10 +2,10 @@ const Candidate = require("../models/candidateModel");
 const User = require("../models/userModel");
 const createCandidate = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role, cv } = req.body;
-
+    const { firstName, lastName, email, password, cv } = req.body;
+    const role = "candidate";
     // Vérification du rôle
-    if (!["admin", "candidate", "candidate"].includes(role)) {
+    if (!["admin", "recruiter", "candidate"].includes(role)) {
       return res.status(400).json({ message: "Rôle invalide" });
     }
 

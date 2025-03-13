@@ -1,15 +1,20 @@
 const Category = require("../models/categoryModel");
-
+const Sector = require("../models/sectorModel");
 const createCategory = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, sector } = req.body;
+    // Vérifier si le catégorie existe
+    const secteur = await Sector.findById(sector);
 
+    if (!secteur) {
+      return res.status(403).json({ message: "Secteur  non trouvée" });
+    }
     // Vérifier si la catégorie existe déjà
     if (await Category.findOne({ name })) {
       return res.status(400).json({ message: "Cette catégorie existe déjà" });
     }
-
-    const category = await Category.create({ name });
+    const category = new Category({ name, sector: secteur._id });
+    await category.save();
     res.status(201).json({ message: "Catégorie créée avec succès", category });
   } catch (error) {
     console.error("Erreur lors de la création :", error);
@@ -18,7 +23,9 @@ const createCategory = async (req, res) => {
 };
 const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find().sort({ createdAt: -1 }); // Tri par date de création décroissante
+    const categories = await Category.find()
+      .sort({ createdAt: -1 })
+      .populate("sector", "name"); // Tri par date de création décroissante
     res.status(200).json(categories);
   } catch (error) {
     console.error("Erreur lors de la récupération :", error);
@@ -27,7 +34,10 @@ const getCategories = async (req, res) => {
 };
 const getCategoryById = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findById(req.params.id).populate(
+      "sector",
+      "name"
+    );
     if (!category) {
       return res.status(404).json({ message: "Catégorie non trouvée" });
     }
@@ -39,8 +49,13 @@ const getCategoryById = async (req, res) => {
 };
 const updateCategory = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, sector } = req.body;
     const { id } = req.params;
+    //verification si le secteur existe
+    const secteur = await Sector.findById(sector);
+    if (!secteur) {
+      return res.status(403).json({ message: "Secteur  non trouvée" });
+    }
 
     const category = await Category.findById(id);
     if (!category) {
@@ -55,6 +70,7 @@ const updateCategory = async (req, res) => {
     }
 
     category.name = name || category.name;
+    category.sector = secteur._id || category.sector;
     await category.save();
     res
       .status(200)

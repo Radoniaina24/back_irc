@@ -1,10 +1,30 @@
 const JobPost = require("../models/jobPostModel");
 const Recruiter = require("../models/recruiterModel");
 const Category = require("../models/categoryModel");
+const Sector = require("../models/sectorModel");
 const createJobPost = async (req, res) => {
   try {
-    const { title, category } = req.body;
+    const {
+      title,
+      category,
+      sector,
+      description,
+      location,
+      remote,
+      contractType,
+      experienceRequired,
+      studyLevels,
+      skills,
+      deadline,
+      status,
+    } = req.body;
     const userId = req.user.id; // Récupéré via le middleware d'authentification
+    // Vérifier si le secteur existe
+    const secteur = await Sector.findById(sector);
+
+    if (!secteur) {
+      return res.status(403).json({ message: "Cette secteur n'éxiste pas." });
+    }
     // Vérifier si le catégorie existe
     const categorie = await Category.findById(category);
 
@@ -24,6 +44,16 @@ const createJobPost = async (req, res) => {
       title,
       recruiter: recruiter._id,
       category: categorie._id,
+      sector: secteur._id,
+      description,
+      location,
+      remote,
+      contractType,
+      experienceRequired,
+      studyLevels,
+      skills,
+      deadline,
+      status,
     });
     await jobPost.save();
     res.status(201).json({ message: "Annonce crée avec succès", jobPost });
@@ -56,7 +86,8 @@ const getMyJobPosts = async (req, res) => {
     const [totalJobPosts, jobPosts] = await Promise.all([
       JobPost.countDocuments({ recruiter: recruiter._id, ...searchQuery }),
       JobPost.find({ recruiter: recruiter._id, ...searchQuery })
-        .populate("category")
+        .populate("category", "name")
+        .populate("sector", "name")
         .skip((page - 1) * limit)
         .limit(limit),
     ]);
@@ -76,7 +107,16 @@ const getMyJobPosts = async (req, res) => {
 const getAllJobPosts = async (req, res) => {
   try {
     // Récupérer toutes les annonces créées par ce recruteur
-    let { page = 1, limit = 10, search, categoryId } = req.query;
+    let {
+      page = 1,
+      limit = 10,
+      search,
+      categoryId,
+      sectorId,
+      contractType,
+      studyLevels,
+      experienceRequired,
+    } = req.query;
 
     // Validation et conversion des paramètres en nombres
     page = Math.max(1, parseInt(page, 10) || 1);
@@ -88,16 +128,34 @@ const getAllJobPosts = async (req, res) => {
     if (search) {
       filters.$or = [{ title: { $regex: search, $options: "i" } }];
     }
-
     if (categoryId) {
       filters.category = categoryId; // Assurez-vous que 'category' est bien le champ dans votre modèle
+    }
+    if (sectorId) {
+      filters.sector = sectorId; // Assurez-vous que 'sector' est bien le champ dans votre modèle
+    }
+    if (contractType) {
+      filters.contractType = contractType; // Assurez-vous que 'contractType' est bien le champ dans votre modèle
+    }
+    if (experienceRequired) {
+      filters.experienceRequired = experienceRequired; // Assurez-vous que 'experienceRequired' est bien le champ dans votre modèle
+    }
+    if (studyLevels) {
+      const ok = decodeURIComponent(studyLevels).replace(/\+/g, " ");
+      console.log(ok);
+      filters.studyLevels = studyLevels; //probleme
     }
     // Exécuter les requêtes en parallèle pour améliorer les performances
     const [totalJobPosts, jobPosts] = await Promise.all([
       JobPost.countDocuments(filters),
       JobPost.find(filters)
-        .populate("recruiter")
-        .populate("category")
+        .populate("sector", "name")
+        .populate({
+          path: "recruiter",
+          select: "function phone",
+          populate: { path: "user", select: "firstName lastName email" },
+        })
+        .populate("category", "name")
         .skip((page - 1) * limit)
         .limit(limit),
     ]);
@@ -157,9 +215,27 @@ const deleteJobPost = async (req, res) => {
 const updateJobPost = async (req, res) => {
   try {
     const id = req.params.id;
-    const { title, category } = req.body;
+    const {
+      title,
+      category,
+      sector,
+      description,
+      location,
+      remote,
+      contractType,
+      experienceRequired,
+      studyLevels,
+      skills,
+      deadline,
+      status,
+    } = req.body;
     const userId = req.user.id; // Récupéré via le middleware d'authentification
+    // Vérifier si le secteur existe
+    const secteur = await Sector.findById(sector);
 
+    if (!secteur) {
+      return res.status(403).json({ message: "Cette secteur n'éxiste pas." });
+    }
     // Vérifier si le catégorie existe
     const categorie = await Category.findById(category);
 
@@ -188,6 +264,17 @@ const updateJobPost = async (req, res) => {
     // Mise à jour des champs fournis
     jobPost.title = title || jobPost.title;
     jobPost.category = categorie._id || jobPost.category;
+    jobPost.sector = secteur._id || jobPost.sector;
+    jobPost.description = description || jobPost.description;
+    jobPost.location = location || jobPost.location;
+    jobPost.contractType = contractType || jobPost.contractType;
+    jobPost.experienceRequired =
+      experienceRequired || jobPost.experienceRequired;
+    jobPost.studyLevels = studyLevels || jobPost.studyLevels;
+    jobPost.skills = skills || jobPost.skills;
+    jobPost.deadline = deadline || jobPost.deadline;
+    jobPost.status = status || jobPost.status;
+    jobPost.remote = remote || jobPost.remote;
     await jobPost.save();
     res
       .status(200)

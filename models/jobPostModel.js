@@ -12,9 +12,9 @@ const jobPostSchema = new mongoose.Schema(
       required: true,
     },
     sector: {
-      type: String,
-      required: [true, "Le secteur d'activité est requis"],
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Sector",
+      required: true,
     },
     title: {
       type: String,
@@ -42,7 +42,7 @@ const jobPostSchema = new mongoose.Schema(
     },
     experienceRequired: {
       type: String,
-      enum: ["Débutant", "1 ans", "2 ans", "3 ans", "4 ans", , "5 ans"],
+      enum: ["Débutant", "1 ans", "2 ans", "3 ans", "4 ans", "5 ans"],
       required: [true, "L'expérience requise est obligatoire"],
     },
     studyLevels: {

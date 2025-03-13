@@ -1,6 +1,7 @@
 const Recruiter = require("../models/recruiterModel");
 const User = require("../models/userModel");
 const Company = require("../models/companyModel");
+const bcrypt = require("bcrypt");
 const createRecruiter = async (req, res) => {
   try {
     const { firstName, lastName, email, password, companyName } = req.body;
@@ -169,7 +170,51 @@ const deleteRecruiter = async (req, res) => {
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id; // ID de l'utilisateur obtenu par middleware d'authentification
+    const { oldPassword, newPassword, confirmPassword } = req.body;
 
+    // Vérification des champs requis
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ message: "Tous les champs sont requis" });
+    }
+
+    // Vérification si le nouveau mot de passe correspond à la confirmation
+    if (newPassword !== confirmPassword) {
+      return res
+        .status(400)
+        .json({ message: "Les mots de passe ne correspondent pas" });
+    }
+    // Vérification de la longueur du mot de passe (bonne pratique)
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        message: "Le mot de passe doit contenir au moins 6 caractères",
+      });
+    }
+
+    // Récupération de l'utilisateur
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé" });
+    }
+    // Vérification de l'ancien mot de passe
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Ancien mot de passe incorrect" });
+    }
+    // Attribuer le nouveau mot de passe (il sera haché par le `pre("save")`)
+    user.password = newPassword;
+
+    // Sauvegarde de l'utilisateur avec le nouveau mot de passe
+    await user.save();
+
+    res.status(200).json({ message: "Mot de passe mis à jour avec succès" });
+  } catch (error) {
+    // console.error("Erreur lors du changement de mot de passe :", error);
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
 module.exports = {
   createRecruiter,
   getAllRecruiters,
@@ -177,4 +222,5 @@ module.exports = {
   deleteRecruiter,
   updateRecruiter,
   updateProfilRecruiter,
+  changePassword,
 };

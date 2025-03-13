@@ -38,4 +38,10 @@ recruiterRoutes.delete(
   checkRole(["admin"]),
   recruiterContollers.deleteRecruiter
 );
+recruiterRoutes.post(
+  "/change_password",
+  isLoggedIn,
+  checkRole(["recruiter"]),
+  recruiterContollers.changePassword
+);
 module.exports = recruiterRoutes;

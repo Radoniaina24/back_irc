@@ -3,19 +3,17 @@ const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const createCandidate = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, cv } = req.body;
+    const { firstName, lastName, email, password } = req.body;
     const role = "candidate";
     // Vérification du rôle
     if (!["admin", "recruiter", "candidate"].includes(role)) {
       return res.status(400).json({ message: "Rôle invalide" });
     }
-
-    // Vérification si l'email est déjà utilisé
+    // Vérification si l'email est déjà utilisé et le role candidate
     const userExist = await User.findOne({ email });
     if (userExist) {
       return res.status(400).json({ message: "Email déjà utilisé" });
     }
-
     // Création de l'utilisateur
     const user = new User({
       firstName,
@@ -26,17 +24,10 @@ const createCandidate = async (req, res) => {
     });
     await user.save();
     // Si le rôle est candidat, créer une entrée dans la collection Candidate
-    if (role === "candidate") {
-      if (!cv) {
-        return res.status(400).json({
-          message: "Le CV est requis pour un candidat",
-        });
-      }
-      // Création d'un candidat associé à l'utilisateur
-      await Candidate.create({ user: user._id, cv });
-    }
+    await Candidate.create({ user: user._id });
+
     // Réponse réussie
-    res.status(201).json({ message: "Inscription réussie", user, cv });
+    res.status(201).json({ message: "Inscription réussie", user });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erreur interne du serveur" });
@@ -117,7 +108,6 @@ const updateCandidate = async (req, res) => {
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
-
 const deleteCandidate = async (req, res) => {
   try {
     const { id } = req.params; // L'ID du candidat à supprimer
@@ -182,6 +172,57 @@ const changePassword = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+
+const updateProfilCandidate = async (req, res) => {
+  const userId = req.user.id; // L'ID du candidat à mettre à jour obtenu par middlware
+  const {
+    phone,
+    address,
+    resume,
+    skills,
+    experience,
+    education,
+    certifications,
+    languages,
+  } = req.body;
+  try {
+    // Vérification que le candidat existe
+    const candidate = await Candidate.findOne({ user: userId }).populate(
+      "user"
+    );
+    if (!candidate) {
+      return res.status(404).json({ message: "Candidat non trouvé" });
+    }
+    // Mise à jour du fonction et le numéro de téléphone la collection Recruiter
+
+    candidate.phone = phone || candidate.phone;
+    candidate.address = address || candidate.address;
+    candidate.resume = resume || candidate.resume;
+    candidate.skills = skills || candidate.skills;
+    candidate.experience = experience || candidate.experience;
+    candidate.education = education || candidate.education;
+    candidate.certifications = certifications || candidate.certifications;
+    candidate.languages = languages || candidate.languages;
+
+    await candidate.save(); // Sauvegarde des modifications
+
+    // Vous pouvez également mettre à jour d'autres informations liées à l'utilisateur, si nécessaire
+    // Par exemple, si vous souhaitez mettre à jour les informations de l'utilisateur :
+    const { firstName, lastName } = req.body;
+    const user = candidate.user;
+
+    if (firstName) user.firstName = firstName;
+    if (lastName) user.lastName = lastName;
+
+    await user.save(); // Sauvegarde des modifications de l'utilisateur
+    res
+      .status(200)
+      .json({ message: "Profil mis à jour avec succès", candidate });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erreur interne du serveur" });
+  }
+};
 module.exports = {
   createCandidate,
   getAllCandidates,
@@ -189,4 +230,5 @@ module.exports = {
   deleteCandidate,
   updateCandidate,
   changePassword,
+  updateProfilCandidate,
 };

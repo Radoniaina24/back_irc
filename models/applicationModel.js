@@ -4,7 +4,7 @@ const applicationSchema = new mongoose.Schema(
   {
     candidate: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Référence vers le candidat qui postule
+      ref: "Candidate", // Référence vers le candidat qui postule
       required: true,
     },
     jobPost: {

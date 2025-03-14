@@ -1,13 +1,18 @@
 const Application = require("../models/applicationModel");
 const JobPost = require("../models/jobPostModel");
 const Recruiter = require("../models/recruiterModel");
-
+const Candidate = require("../models/candidateModel");
 const applyToJob = async (req, res) => {
   try {
     const { jobId } = req.params;
     const { coverLetter } = req.body;
-    const candidateId = req.user.id;
-
+    const userId = req.user.id;
+    // console.log(userId);
+    // Vérifier si le candidat existe
+    const candidate = await Candidate.findOne({ user: userId });
+    if (!candidate) {
+      return res.status(404).json({ message: "Candidat introuvable." });
+    }
     // Vérifier si l'annonce existe
     const jobPost = await JobPost.findById(jobId).populate("recruiter");
     if (!jobPost) {
@@ -16,7 +21,7 @@ const applyToJob = async (req, res) => {
 
     // Vérifier si le candidat a déjà postulé
     const existingApplication = await Application.findOne({
-      candidate: candidateId,
+      candidate: candidate._id,
       jobPost: jobId,
     });
 
@@ -28,7 +33,7 @@ const applyToJob = async (req, res) => {
 
     // Créer une nouvelle candidature
     const application = new Application({
-      candidate: candidateId,
+      candidate: candidate._id,
       jobPost: jobId,
       recruiter: jobPost.recruiter,
       coverLetter,
@@ -121,10 +126,14 @@ const getRecruiterApplications = async (req, res) => {
     const [totalJobApplication, jobApplication] = await Promise.all([
       Application.countDocuments({ recruiter: recruiter._id, ...searchQuery }),
       Application.find({ recruiter: recruiter._id, ...searchQuery })
-        .populate("candidate")
+        .populate({
+          path: "candidate",
+          populate: { path: "user", select: "lastName firstName email" },
+        })
         .populate({
           path: "jobPost",
           populate: { path: "category" },
+          populate: { path: "sector", select: "name" },
         })
         .skip((page - 1) * limit)
         .limit(limit),

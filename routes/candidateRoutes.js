@@ -38,4 +38,10 @@ candidateRoutes.post(
   checkRole(["candidate"]),
   candidateController.changePassword
 );
+candidateRoutes.post(
+  "/update_profil",
+  isLoggedIn,
+  checkRole(["candidate"]),
+  candidateController.updateProfilCandidate
+);
 module.exports = candidateRoutes;

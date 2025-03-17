@@ -8,18 +8,20 @@ async function login(req, res) {
     const { email, password } = req.body;
     // Vérifier si les champs sont bien remplis
     if (!email || !password) {
-      return res.status(400).json({ message: "Email et mot de passe requis" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
     // Trouver l'utilisateur et inclure explicitement le champ `password`
     const userFound = await User.findOne({ email }).select("+password");
 
     if (!userFound) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      return res.status(404).json({ message: "Incorrect password or email" });
     }
     // Vérifier le mot de passe
     const isMatch = await bcrypt.compare(password, userFound.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Identifiants incorrects" });
+      return res.status(400).json({ message: "Incorrect password or email" });
     }
     const refreshToken = generateRefreshToken(userFound._id);
     userFound.refreshToken = refreshToken;
@@ -44,7 +46,7 @@ async function login(req, res) {
 
 async function getMe(req, res) {
   if (!req.user) {
-    return res.status(401).json({ message: "Utilisateur non authentifié." });
+    return res.status(401).json({ message: "User not authenticated" });
   }
   const user = req.user; // Injecté par le middleware `isLoggedIn`
   // console.log("user", user);
@@ -81,9 +83,9 @@ async function refreshAccessToken(req, res) {
       sameSite: "Strict",
       maxAge: 15 * 60 * 1000,
     });
-    res.status(200).json({ message: "Token rafraîchi avec succès" });
+    res.status(200).json({ message: "Token successfully refreshed" });
   } catch (error) {
-    return res.status(403).json({ message: "Token invalide ou expiré" });
+    return res.status(403).json({ message: "Invalid or expired token" });
   }
 }
 

@@ -10,12 +10,12 @@ const createRecruiter = async (req, res) => {
     // Vérification si l'email est déjà utilisé
     const userExist = await User.findOne({ email });
     if (userExist) {
-      return res.status(400).json({ message: "Email déjà utilisé" });
+      return res.status(400).json({ message: "Email already in use" });
     }
 
     if (!companyName) {
       return res.status(400).json({
-        message: "Le nom de l'entreprise est requis pour un recruteur",
+        message: "The company name is required for a recruiter",
       });
     }
 
@@ -39,7 +39,7 @@ const createRecruiter = async (req, res) => {
       recruiter: recruiter._id, // Associer l'entreprise au recruteur
     });
     res.status(201).json({
-      message: "Inscription réussie",
+      message: "Registration successful",
       user,
       recruiter,
       company,
@@ -90,7 +90,7 @@ const updateRecruiter = async (req, res) => {
     // Vérification que le recruteur existe
     const recruiter = await Recruiter.findById(id).populate("user");
     if (!recruiter) {
-      return res.status(404).json({ message: "Recruteur non trouvé" });
+      return res.status(404).json({ message: "Recruiter not found" });
     }
     // Mise à jour du fonction et le numéro de téléphone la collection Recruiter
 
@@ -109,10 +109,10 @@ const updateRecruiter = async (req, res) => {
     await user.save(); // Sauvegarde des modifications de l'utilisateur
     res
       .status(200)
-      .json({ message: "Recruteur mis à jour avec succès", recruiter });
+      .json({ message: "Recruiter updated successfully", recruiter });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur interne du serveur" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 const updateProfilRecruiter = async (req, res) => {
@@ -124,7 +124,7 @@ const updateProfilRecruiter = async (req, res) => {
       "user"
     );
     if (!recruiter) {
-      return res.status(404).json({ message: "Recruteur non trouvé" });
+      return res.status(404).json({ message: "Recruiter not found" });
     }
     // Mise à jour du fonction et le numéro de téléphone la collection Recruiter
 
@@ -143,10 +143,10 @@ const updateProfilRecruiter = async (req, res) => {
     await user.save(); // Sauvegarde des modifications de l'utilisateur
     res
       .status(200)
-      .json({ message: "Profil mis à jour avec succès", recruiter });
+      .json({ message: "Profile updated successfully", recruiter });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur interne du serveur" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 const deleteRecruiter = async (req, res) => {
@@ -155,7 +155,7 @@ const deleteRecruiter = async (req, res) => {
     // Vérification que le recruteur existe
     const recruiter = await Recruiter.findById(id).populate("user");
     if (!recruiter) {
-      return res.status(404).json({ message: "Recruteur non trouvé" });
+      return res.status(404).json({ message: "Recruiter not found" });
     }
     // Suppression de l'entreprise associée
     await Company.deleteOne({ recruiter: recruiter._id });
@@ -164,10 +164,10 @@ const deleteRecruiter = async (req, res) => {
     // Suppression de l'utilisateur dans la collection User
     await User.findByIdAndDelete(recruiter.user._id);
     // Réponse après la suppression
-    res.status(200).json({ message: "Recruteur supprimé avec succès" });
+    res.status(200).json({ message: "Recruiter deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Erreur interne du serveur" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 const changePassword = async (req, res) => {
@@ -177,31 +177,29 @@ const changePassword = async (req, res) => {
 
     // Vérification des champs requis
     if (!oldPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({ message: "Tous les champs sont requis" });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     // Vérification si le nouveau mot de passe correspond à la confirmation
     if (newPassword !== confirmPassword) {
-      return res
-        .status(400)
-        .json({ message: "Les mots de passe ne correspondent pas" });
+      return res.status(400).json({ message: "Passwords don't match" });
     }
     // Vérification de la longueur du mot de passe (bonne pratique)
     if (newPassword.length < 6) {
       return res.status(400).json({
-        message: "Le mot de passe doit contenir au moins 6 caractères",
+        message: "Password must contain at least 6 characters",
       });
     }
 
     // Récupération de l'utilisateur
     const user = await User.findById(userId).select("+password");
     if (!user) {
-      return res.status(404).json({ message: "Utilisateur non trouvé" });
+      return res.status(404).json({ message: "User not found" });
     }
     // Vérification de l'ancien mot de passe
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Ancien mot de passe incorrect" });
+      return res.status(400).json({ message: "Incorrect old password" });
     }
     // Attribuer le nouveau mot de passe (il sera haché par le `pre("save")`)
     user.password = newPassword;
@@ -209,10 +207,10 @@ const changePassword = async (req, res) => {
     // Sauvegarde de l'utilisateur avec le nouveau mot de passe
     await user.save();
 
-    res.status(200).json({ message: "Mot de passe mis à jour avec succès" });
+    res.status(200).json({ message: "Password updated successfully" });
   } catch (error) {
     // console.error("Erreur lors du changement de mot de passe :", error);
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 module.exports = {

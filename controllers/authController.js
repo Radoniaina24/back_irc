@@ -69,7 +69,6 @@ async function logout(req, res) {
   });
   res.json({ message: "User logged out successfully" });
 }
-
 async function refreshAccessToken(req, res) {
   try {
     const refreshToken = req.cookies.refreshToken;
@@ -79,11 +78,13 @@ async function refreshAccessToken(req, res) {
     const newAccessToken = generateRefreshToken(decoded.id);
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "Strict",
-      maxAge: 15 * 60 * 1000,
+      maxAge: 1000 * 60 * 60 * 24 * 7, // Durée du Refresh Token (7 jours)
     });
-    res.status(200).json({ message: "Token successfully refreshed" });
+    res
+      .status(200)
+      .json({ message: "Token successfully refreshed", newAccessToken });
   } catch (error) {
     return res.status(403).json({ message: "Invalid or expired token" });
   }

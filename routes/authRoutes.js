@@ -7,7 +7,7 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 authRoutes.post("/login", asyncHandler(auhtContollers.login));
 authRoutes.get("/me", isLoggedIn, asyncHandler(auhtContollers.getMe));
 authRoutes.post("/logout", asyncHandler(auhtContollers.logout));
-authRoutes.post(
+authRoutes.get(
   "/refresh-token",
   asyncHandler(auhtContollers.refreshAccessToken)
 );

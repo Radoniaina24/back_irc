@@ -16,13 +16,34 @@ const createSector = async (req, res) => {
 };
 const getSectors = async (req, res) => {
   try {
-    const sectors = await Sector.find().sort({ createdAt: -1 }); // Tri par date de création décroissante
-    res.status(200).json(sectors);
+    const { page = 1, limit = 10, search } = req.query;
+    const searchQuery = search
+      ? {
+          name: { $regex: search, $options: "i" }, // Supposons que "name" soit le champ à rechercher
+        }
+      : {};
+
+    const totalSectors = await Sector.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalSectors / limit);
+
+    const sectors = await Sector.find(searchQuery)
+      .sort({ createdAt: -1 }) // Tri par date de création décroissante
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    res.status(200).json({
+      status: "success",
+      totalSectors,
+      totalPages,
+      currentPage: parseInt(page),
+      sectors,
+    });
   } catch (error) {
-    console.error("Erreur lors de la récupération :", error);
+    console.error("Erreur lors de la récupération des secteurs :", error);
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+
 const getSectorById = async (req, res) => {
   try {
     const sector = await Sector.findById(req.params.id);

@@ -54,20 +54,54 @@ const createRecruiter = async (req, res) => {
 const getAllRecruiters = async (req, res) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
-    const searchQuery = search
-      ? {
-          $or: [{ society: { $regex: search, $options: "i" } }],
-        }
-      : {};
-    const totalRecruiters = await Recruiter.countDocuments(searchQuery);
+
+    // Pipeline d'agrégation pour rechercher dans user
+    const pipeline = [
+      {
+        $lookup: {
+          from: "users", // Nom de la collection User
+          localField: "user",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" }, // Transforme l'array en objet
+    ];
+
+    // Ajouter la recherche si elle existe
+    if (search) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { "user.firstName": { $regex: search, $options: "i" } },
+            { "user.lastName": { $regex: search, $options: "i" } },
+            { "user.email": { $regex: search, $options: "i" } },
+          ],
+        },
+      });
+    }
+
+    // Compter le total des résultats après le filtrage
+    const totalRecruiters =
+      (await Recruiter.aggregate([...pipeline, { $count: "count" }]))[0]
+        ?.count || 0;
     const totalPages = Math.ceil(totalRecruiters / limit);
-    const recruiters = await Recruiter.find(searchQuery)
-      .populate("user")
-      .skip((page - 1) * limit)
-      .limit(limit);
+
+    // Ajouter pagination
+    pipeline.push({ $skip: (page - 1) * limit }, { $limit: parseInt(limit) });
+
+    // Exécuter l'agrégation
+    const recruiters = await Recruiter.aggregate(pipeline);
+
     res
       .status(200)
-      .json({ status: "success", totalRecruiters, totalPages, recruiters });
+      .json({
+        status: "success",
+        totalRecruiters,
+        totalPages,
+        recruiters,
+        currentPage: parseInt(page),
+      });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

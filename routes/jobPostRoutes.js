@@ -28,6 +28,12 @@ jobPostRoutes.put(
   checkRole(["recruiter"]),
   asyncHandler(jobPostContollers.updateJobPost)
 );
+jobPostRoutes.put(
+  "/update/:id",
+  isLoggedIn,
+  checkRole(["admin"]),
+  asyncHandler(jobPostContollers.updateJobPostByStatus)
+);
 jobPostRoutes.get("/:id", asyncHandler(jobPostContollers.getJobPostById));
 jobPostRoutes.get("/", asyncHandler(jobPostContollers.getAllJobPosts));
 module.exports = jobPostRoutes;

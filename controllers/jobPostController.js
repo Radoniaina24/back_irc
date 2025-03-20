@@ -16,7 +16,6 @@ const createJobPost = async (req, res) => {
       studyLevels,
       skills,
       deadline,
-      status,
     } = req.body;
     const userId = req.user.id; // Récupéré via le middleware d'authentification
     // Vérifier si le secteur existe
@@ -53,7 +52,6 @@ const createJobPost = async (req, res) => {
       studyLevels,
       skills,
       deadline,
-      status,
     });
     await jobPost.save();
     res.status(201).json({ message: "Annonce crée avec succès", jobPost });
@@ -227,7 +225,6 @@ const updateJobPost = async (req, res) => {
       studyLevels,
       skills,
       deadline,
-      status,
     } = req.body;
     const userId = req.user.id; // Récupéré via le middleware d'authentification
     // Vérifier si le secteur existe
@@ -273,7 +270,6 @@ const updateJobPost = async (req, res) => {
     jobPost.studyLevels = studyLevels || jobPost.studyLevels;
     jobPost.skills = skills || jobPost.skills;
     jobPost.deadline = deadline || jobPost.deadline;
-    jobPost.status = status || jobPost.status;
     jobPost.remote = remote || jobPost.remote;
     await jobPost.save();
     res
@@ -283,7 +279,27 @@ const updateJobPost = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
-
+const updateJobPostByStatus = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { status } = req.body;
+    // Vérifier que l'annonce existe
+    const jobPost = await JobPost.findOne({
+      _id: id,
+    });
+    if (!jobPost) {
+      return res.status(404).json({ message: "Annonce introuvable" });
+    }
+    // Mise à jour des champs fournis
+    jobPost.status = status || jobPost.status;
+    await jobPost.save();
+    res
+      .status(200)
+      .json({ message: "Annonce mise à jour avec succès", jobPost });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
 module.exports = {
   createJobPost,
   getMyJobPosts,
@@ -291,4 +307,5 @@ module.exports = {
   getJobPostById,
   deleteJobPost,
   updateJobPost,
+  updateJobPostByStatus,
 };

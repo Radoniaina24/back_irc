@@ -2,10 +2,10 @@ const User = require("../models/userModel");
 const verifyToken = require("../utils/verifyToken");
 const bcrypt = require("bcrypt");
 const { generateRefreshToken } = require("../utils/generateToken");
-
 async function login(req, res) {
   try {
     const { email, password } = req.body;
+
     // Vérifier si les champs sont bien remplis
     if (!email || !password) {
       return res

@@ -23,10 +23,26 @@ const createCategory = async (req, res) => {
 };
 const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find()
+    const { page = 1, limit = 10, search } = req.query;
+    const searchQuery = search
+      ? {
+          name: { $regex: search, $options: "i" }, // Supposons que "name" soit le champ à rechercher
+        }
+      : {};
+    const totalCategories = await Category.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalCategories / limit);
+    const categories = await Category.find(searchQuery)
       .sort({ createdAt: -1 })
-      .populate("sector", "name"); // Tri par date de création décroissante
-    res.status(200).json(categories);
+      .populate("sector", "name")
+      .skip((page - 1) * limit)
+      .limit(limit); // Tri par date de création décroissante
+    res.status(200).json({
+      status: "success",
+      totalCategories,
+      totalPages,
+      currentPage: parseInt(page),
+      categories,
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération :", error);
     res.status(500).json({ message: "Erreur interne du serveur" });

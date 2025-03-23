@@ -7,7 +7,7 @@ const path = require("path");
 app.use(cookieParser());
 // CORS configuration
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "https://back-irc-1.onrender.com",
   // "https://front-school-managment.vercel.app" || "http://localhost:3000", // Autoriser le frontend à accéder à l'API
   credentials: true, // Permet d'envoyer des cookies
 };

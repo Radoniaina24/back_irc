@@ -22,13 +22,15 @@ const createJobPost = async (req, res) => {
     const secteur = await Sector.findById(sector);
 
     if (!secteur) {
-      return res.status(403).json({ message: "Cette secteur n'éxiste pas." });
+      return res.status(403).json({ message: "This sector does not exist." });
     }
     // Vérifier si le catégorie existe
     const categorie = await Category.findById(category);
 
     if (!categorie) {
-      return res.status(403).json({ message: "Cette catégorie n'éxiste pas." });
+      return res
+        .status(403)
+        .json({ message: " This category does not exist." });
     }
     // Vérifier si l'utilisateur est un recruteur
     const recruiter = await Recruiter.findOne({ user: userId });
@@ -36,7 +38,7 @@ const createJobPost = async (req, res) => {
     if (!recruiter) {
       return res
         .status(403)
-        .json({ message: "Accès refusé. Recruteur requis." });
+        .json({ message: " Access denied. Recruiter required." });
     }
     // Créer et enregistrer l'annonce
     const jobPost = new JobPost({
@@ -54,9 +56,9 @@ const createJobPost = async (req, res) => {
       deadline,
     });
     await jobPost.save();
-    res.status(201).json({ message: "Annonce crée avec succès", jobPost });
+    res.status(201).json({ message: "Ad created successfully.", jobPost });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    res.status(500).json({ message: "Server error.", error: error.message });
   }
 };
 const getMyJobPosts = async (req, res) => {
@@ -67,7 +69,7 @@ const getMyJobPosts = async (req, res) => {
     if (!recruiter) {
       return res
         .status(403)
-        .json({ message: "Accès refusé. Recruteur requis." });
+        .json({ message: "Access denied. Recruiter required." });
     }
     // Récupérer toutes les annonces créées par ce recruteur
     let { page = 1, limit = 10, search } = req.query;
@@ -99,7 +101,7 @@ const getMyJobPosts = async (req, res) => {
       jobPosts,
     });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    res.status(500).json({ message: "Server error.", error: error.message });
   }
 };
 const getAllJobPosts = async (req, res) => {
@@ -166,14 +168,13 @@ const getAllJobPosts = async (req, res) => {
       jobPosts,
     });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    res.status(500).json({ message: "Server error.", error: error.message });
   }
 };
 const getJobPostById = async (req, res) => {
   try {
     const jobPost = await JobPost.findById(req.params.id).populate("recruiter");
-    if (!jobPost)
-      return res.status(404).json({ message: "Annonce non trouvé" });
+    if (!jobPost) return res.status(404).json({ message: "Ad not found." });
     res.status(200).json(jobPost);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -190,7 +191,7 @@ const deleteJobPost = async (req, res) => {
     if (!recruiter) {
       return res
         .status(403)
-        .json({ message: "Accès refusé. Recruteur requis." });
+        .json({ message: "Access denied. Recruiter required." });
     }
 
     // Vérifier que l'annonce appartient bien au recruteur
@@ -199,15 +200,13 @@ const deleteJobPost = async (req, res) => {
       recruiter: recruiter._id,
     });
     if (!jobPost) {
-      return res
-        .status(404)
-        .json({ message: "Annonce introuvable ou non autorisée." });
+      return res.status(404).json({ message: "Ad not found or unauthorized." });
     }
 
     await JobPost.deleteOne({ _id: id });
-    res.status(200).json({ message: "Annonce supprimée avec succès" });
+    res.status(200).json({ message: "Ad deleted successfully." });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    res.status(500).json({ message: "Server error.", error: error.message });
   }
 };
 const updateJobPost = async (req, res) => {
@@ -231,20 +230,20 @@ const updateJobPost = async (req, res) => {
     const secteur = await Sector.findById(sector);
 
     if (!secteur) {
-      return res.status(403).json({ message: "Cette secteur n'éxiste pas." });
+      return res.status(403).json({ message: "This sector does not exist." });
     }
     // Vérifier si le catégorie existe
     const categorie = await Category.findById(category);
 
     if (!categorie) {
-      return res.status(403).json({ message: "Cette catégorie n'éxiste pas." });
+      return res.status(403).json({ message: "This category does not exist." });
     }
     // Trouver le recruteur associé
     const recruiter = await Recruiter.findOne({ user: userId });
     if (!recruiter) {
       return res
         .status(403)
-        .json({ message: "Accès refusé. Recruteur requis." });
+        .json({ message: "Access denied. Recruiter required." });
     }
 
     // Vérifier que l'annonce appartient bien au recruteur
@@ -253,9 +252,7 @@ const updateJobPost = async (req, res) => {
       recruiter: recruiter._id,
     });
     if (!jobPost) {
-      return res
-        .status(404)
-        .json({ message: "Annonce introuvable ou non autorisée." });
+      return res.status(404).json({ message: "Ad not found or unauthorized." });
     }
 
     // Mise à jour des champs fournis
@@ -272,11 +269,9 @@ const updateJobPost = async (req, res) => {
     jobPost.deadline = deadline || jobPost.deadline;
     jobPost.remote = remote || jobPost.remote;
     await jobPost.save();
-    res
-      .status(200)
-      .json({ message: "Annonce mise à jour avec succès", jobPost });
+    res.status(200).json({ message: "Ad updated successfully.", jobPost });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    res.status(500).json({ message: " Server error.", error: error.message });
   }
 };
 const updateJobPostByStatus = async (req, res) => {
@@ -288,16 +283,14 @@ const updateJobPostByStatus = async (req, res) => {
       _id: id,
     });
     if (!jobPost) {
-      return res.status(404).json({ message: "Annonce introuvable" });
+      return res.status(404).json({ message: "Ad not found." });
     }
     // Mise à jour des champs fournis
     jobPost.status = status || jobPost.status;
     await jobPost.save();
-    res
-      .status(200)
-      .json({ message: "Annonce mise à jour avec succès", jobPost });
+    res.status(200).json({ message: "Ad updated successfully.", jobPost });
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 module.exports = {

@@ -54,8 +54,8 @@ const jobPostSchema = new mongoose.Schema(
     },
     permissions: {
       type: String,
-      enum: ["ALLOWED", "DENIED"],
-      default: "DENIED",
+      enum: ["Pending", "Allowed", "Denied"],
+      default: "Pending",
     },
   },
   { timestamps: true }

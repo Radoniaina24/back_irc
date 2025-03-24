@@ -8,7 +8,7 @@ app.use(cookieParser());
 // CORS configuration
 const allowedOrigins = [
   "https://international-recruit-agency.vercel.app",
-  "http://localhost:3000", // Ajout de localhost
+  // "http://localhost:3000", // Ajout de localhost
 ];
 
 // const corsOptions = {

@@ -31,7 +31,7 @@ async function login(req, res) {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production", // true en prod, false en dev
-      sameSite: "None", // Permet d'envoyer le cookie même en cross-origin
+      sameSite: "Strict", // Permet d'envoyer le cookie même en cross-origin
       maxAge: 3600000, // 1 heure
     });
     res.json({

@@ -5,6 +5,12 @@ const checkRole = require("../middlewares/checkRole");
 const recruiterRoutes = express.Router();
 const recruiterContollers = require("../controllers/recruiterController");
 recruiterRoutes.get(
+  "/my-profile",
+  isLoggedIn,
+  checkRole(["recruiter"]),
+  recruiterContollers.getMe
+);
+recruiterRoutes.get(
   "/",
   isLoggedIn,
   checkRole(["admin"]),
@@ -44,4 +50,5 @@ recruiterRoutes.post(
   checkRole(["recruiter"]),
   recruiterContollers.changePassword
 );
+
 module.exports = recruiterRoutes;

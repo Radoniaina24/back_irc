@@ -27,22 +27,15 @@ const createRecruiter = async (req, res) => {
       password,
       role,
     });
-
     // Création du recruteur
     const recruiter = await Recruiter.create({
       user: user._id,
-    });
-
-    // Création de l'entreprise
-    const company = await Company.create({
       companyName,
-      recruiter: recruiter._id, // Associer l'entreprise au recruteur
     });
     res.status(201).json({
       message: "Registration successful",
       user,
       recruiter,
-      company,
     });
   } catch (error) {
     console.error(error);
@@ -93,15 +86,13 @@ const getAllRecruiters = async (req, res) => {
     // Exécuter l'agrégation
     const recruiters = await Recruiter.aggregate(pipeline);
 
-    res
-      .status(200)
-      .json({
-        status: "success",
-        totalRecruiters,
-        totalPages,
-        recruiters,
-        currentPage: parseInt(page),
-      });
+    res.status(200).json({
+      status: "success",
+      totalRecruiters,
+      totalPages,
+      recruiters,
+      currentPage: parseInt(page),
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -118,7 +109,16 @@ const getRecruiterById = async (req, res) => {
 };
 const updateRecruiter = async (req, res) => {
   const { id } = req.params; // L'ID du recruteur à mettre à jour
-  const { func, phone } = req.body; // Nouvelle société ou autres données à mettre à jour
+  const {
+    func,
+    phone,
+    companyName,
+    industry,
+    address,
+    city,
+    country,
+    website,
+  } = req.body; // Nouvelle société ou autres données à mettre à jour
 
   try {
     // Vérification que le recruteur existe
@@ -127,9 +127,15 @@ const updateRecruiter = async (req, res) => {
       return res.status(404).json({ message: "Recruiter not found" });
     }
     // Mise à jour du fonction et le numéro de téléphone la collection Recruiter
+    recruiter.phone = phone || recruiter.phone;
+    recruiter.function = func || recruiter.function;
+    recruiter.phone = companyName || companyName.phone;
+    recruiter.function = industry || recruiter.industry;
+    recruiter.phone = address || recruiter.address;
+    recruiter.function = city || recruiter.city;
+    recruiter.function = country || recruiter.country;
+    recruiter.function = website || recruiter.website;
 
-    recruiter.phone = phone;
-    recruiter.function = func;
     await recruiter.save(); // Sauvegarde des modifications
 
     // Vous pouvez également mettre à jour d'autres informations liées à l'utilisateur, si nécessaire
@@ -151,7 +157,17 @@ const updateRecruiter = async (req, res) => {
 };
 const updateProfilRecruiter = async (req, res) => {
   const userId = req.user.id; // L'ID du recruteur à mettre à jour obtenu par middlware
-  const { func, phone } = req.body; // Nouvelle société ou autres données à mettre à jour
+  console.log(userId);
+  const {
+    func,
+    phone,
+    companyName,
+    industry,
+    address,
+    city,
+    country,
+    website,
+  } = req.body; // Nouvelle société ou autres données à mettre à jour
   try {
     // Vérification que le recruteur existe
     const recruiter = await Recruiter.findOne({ user: userId }).populate(
@@ -161,9 +177,14 @@ const updateProfilRecruiter = async (req, res) => {
       return res.status(404).json({ message: "Recruiter not found" });
     }
     // Mise à jour du fonction et le numéro de téléphone la collection Recruiter
-
-    recruiter.phone = phone;
-    recruiter.function = func;
+    recruiter.phone = phone || recruiter.phone;
+    recruiter.function = func || recruiter.function;
+    recruiter.companyName = companyName || recruiter.companyName;
+    recruiter.industry = industry || recruiter.industry;
+    recruiter.address = address || recruiter.address;
+    recruiter.city = city || recruiter.city;
+    recruiter.country = country || recruiter.country;
+    recruiter.website = website || recruiter.website;
     await recruiter.save(); // Sauvegarde des modifications
 
     // Vous pouvez également mettre à jour d'autres informations liées à l'utilisateur, si nécessaire
@@ -177,7 +198,7 @@ const updateProfilRecruiter = async (req, res) => {
     await user.save(); // Sauvegarde des modifications de l'utilisateur
     res
       .status(200)
-      .json({ message: "Profile updated successfully", recruiter });
+      .json({ message: "Recruiter updated successfully", recruiter });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -247,6 +268,25 @@ const changePassword = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+const getMe = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assurez-vous que req.user.id est bien un ObjectId valide
+    const recruiter = await Recruiter.findOne({ user: userId }).populate(
+      "user"
+    );
+
+    if (!recruiter) {
+      return res.status(404).json({ message: "Recruiter not found" });
+    }
+
+    res.status(200).json({ recruiter });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
 module.exports = {
   createRecruiter,
   getAllRecruiters,
@@ -255,4 +295,5 @@ module.exports = {
   updateRecruiter,
   updateProfilRecruiter,
   changePassword,
+  getMe,
 };

@@ -15,6 +15,28 @@ const recruiterSchema = new mongoose.Schema(
     phone: {
       type: String,
     },
+    companyName: {
+      type: String,
+      required: [true, "Le nom de l’entreprise est requis"],
+      trim: true,
+    },
+    industry: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    address: { type: String, required: false, trim: true },
+    city: { type: String, required: false, trim: true },
+    country: { type: String, required: false, trim: true },
+    website: {
+      type: String,
+      required: false,
+      trim: true,
+    },
+    logo: {
+      type: String,
+      required: false, // URL du logo stocké
+    },
   },
   {
     timestamps: true,

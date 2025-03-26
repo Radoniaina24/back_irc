@@ -8,14 +8,12 @@ async function isLoggedIn(req, res, next) {
   // console.log("token :", tokenCookies);
   try {
     const token = req.cookies.refreshToken; // Récupération du token via le cookie sécurisé
-    // console.log(token);
     if (!token) {
       return res.status(401).json({ message: "Accès refusé, token manquant" });
     }
-
     const decoded = verifyToken(token);
     const user = await User.findById(decoded.id).select("-password");
-
+    // console.log(user);
     if (!user) {
       return res.status(404).json({ message: "Utilisateur non trouvé" });
     }

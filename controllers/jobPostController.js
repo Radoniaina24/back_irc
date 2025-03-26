@@ -277,7 +277,7 @@ const updateJobPost = async (req, res) => {
 const updateJobPostByStatus = async (req, res) => {
   try {
     const id = req.params.id;
-    const { status } = req.body;
+    const { permissions } = req.body;
     // Vérifier que l'annonce existe
     const jobPost = await JobPost.findOne({
       _id: id,
@@ -286,7 +286,7 @@ const updateJobPostByStatus = async (req, res) => {
       return res.status(404).json({ message: "Ad not found." });
     }
     // Mise à jour des champs fournis
-    jobPost.status = status || jobPost.status;
+    jobPost.permissions = permissions || jobPost.permissions;
     await jobPost.save();
     res.status(200).json({ message: "Ad updated successfully.", jobPost });
   } catch (error) {

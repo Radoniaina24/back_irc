@@ -29,7 +29,7 @@ jobPostRoutes.put(
   asyncHandler(jobPostContollers.updateJobPost)
 );
 jobPostRoutes.put(
-  "/update/:id",
+  "/update-by-admin/:id",
   isLoggedIn,
   checkRole(["admin"]),
   asyncHandler(jobPostContollers.updateJobPostByStatus)

@@ -43,6 +43,7 @@ const sectorRoutes = require("./routes/sectorRoutes");
 const educationRoutes = require("./routes/educationRoute");
 const experienceRoutes = require("./routes/experienceRoutes");
 const certificationRoutes = require("./routes/certificationRoutes");
+const languageRoutes = require("./routes/languageRoutes");
 const port = process.env.PORT;
 dbConnect();
 app.use(express.json());
@@ -64,6 +65,7 @@ app.use("/api/sector", sectorRoutes);
 app.use("/api/education", educationRoutes);
 app.use("/api/experience", experienceRoutes);
 app.use("/api/certification", certificationRoutes);
+app.use("/api/language", languageRoutes);
 
 //Gestion des erreurs
 app.use(notFound);

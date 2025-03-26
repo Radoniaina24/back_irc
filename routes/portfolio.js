@@ -3,12 +3,14 @@ const portfolioRouter = express.Router();
 const portfolioController = require("../controllers/portfolioController");
 const isLoggedIn = require("../middlewares/isLoggedIn");
 const checkRole = require("../middlewares/checkRole");
+const { uploadFile } = require("../utils/cloudinary");
 
 // Créer un portfolio
 portfolioRouter.post(
   "/",
   isLoggedIn,
   checkRole(["candidate"]),
+  uploadFile,
   portfolioController.createPortfolio
 );
 
@@ -33,6 +35,7 @@ portfolioRouter.put(
   "/:id",
   isLoggedIn,
   checkRole(["candidate"]),
+  uploadFile,
   portfolioController.updatePortfolio
 );
 

@@ -31,7 +31,7 @@ const storage = new CloudinaryStorage({
     const isPdf = file.mimetype === "application/pdf";
 
     let options = {
-      folder: isImage ? "profil_student" : "pdfs_student",
+      folder: "portfolio",
       public_id: `${originalName}_${currentDate}`,
     };
 
@@ -48,13 +48,8 @@ const storage = new CloudinaryStorage({
 // Initialisation de l'upload avec multer
 const upload = multer({ storage: storage });
 const uploadStudentPhoto = upload.single("photo");
-const uploadFileStudent = upload.fields([
-  { name: "profilePhoto", maxCount: 1 },
-  { name: "last_degree", maxCount: 1 },
-  { name: "residence_certificate", maxCount: 1 },
-  { name: "transcript", maxCount: 1 },
-]);
+const uploadFile = upload.fields([{ name: "file", maxCount: 1 }]);
 module.exports = {
   uploadStudentPhoto,
-  uploadFileStudent,
+  uploadFile,
 };

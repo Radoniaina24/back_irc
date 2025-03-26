@@ -31,8 +31,9 @@ const portfolioSchema = new mongoose.Schema(
       },
     ],
     file: {
-      type: String,
-      required: true, // Le fichier est obligatoire
+      url: { type: String, required: true },
+      publicId: { type: String, required: true },
+      type: { type: String, required: true },
     },
   },
   { timestamps: true } // Ajoute createdAt et updatedAt automatiquement

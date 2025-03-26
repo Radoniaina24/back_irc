@@ -1,8 +1,21 @@
 const Portfolio = require("../models/portfolioModel");
 const Candidate = require("../models/candidateModel");
-
+const cloudinary = require("cloudinary").v2;
 // Créer un portfolio
 exports.createPortfolio = async (req, res) => {
+  if (!req.files) {
+    return res
+      .status(400)
+      .json({ message: "Veuillez télécharger les fichiers requis." });
+  }
+  const uploadedFiles = {};
+  Object.keys(req.files).forEach((key) => {
+    uploadedFiles[key] = {
+      url: req.files[key][0].path,
+      publicId: req.files[key][0].filename,
+      type: req.files[key][0].mimetype.startsWith("image/") ? "image" : "pdf",
+    };
+  });
   const userId = req.user.id; // Récupéré via le middleware d'authentification
   try {
     const { title, role, description, skills, file } = req.body;
@@ -19,7 +32,7 @@ exports.createPortfolio = async (req, res) => {
       role,
       description,
       skills,
-      file,
+      file: uploadedFiles.file,
     });
 
     await newPortfolio.save();
@@ -64,10 +77,19 @@ exports.getPortfolioById = async (req, res) => {
 // Mettre à jour un portfolio
 exports.updatePortfolio = async (req, res) => {
   const userId = req.user.id; // Récupéré via le middleware d'authentification
-
+  let uploadedFiles = {};
+  if (req.files.file) {
+    Object.keys(req.files).forEach((key) => {
+      uploadedFiles[key] = {
+        url: req.files[key][0].path,
+        publicId: req.files[key][0].filename,
+        type: req.files[key][0].mimetype.startsWith("image/") ? "image" : "pdf",
+      };
+    });
+  }
   try {
     const { id } = req.params;
-    const { title, role, description, skills, file } = req.body;
+    const { title, role, description, skills } = req.body;
 
     // Vérification de l'existence du candidat
     const existingCandidate = await Candidate.findOne({ user: userId });
@@ -89,8 +111,11 @@ exports.updatePortfolio = async (req, res) => {
     portfolio.role = role || portfolio.role;
     portfolio.description = description || portfolio.description;
     portfolio.skills = skills || portfolio.skills;
-    portfolio.file = file || portfolio.file;
 
+    if (req.files.file) {
+      await cloudinary.uploader.destroy(portfolio.file.publicId);
+      portfolio.file = uploadedFiles.file || portfolio.file;
+    }
     const updatedPortfolio = await portfolio.save();
     res.status(200).json(updatedPortfolio);
   } catch (error) {
@@ -122,7 +147,8 @@ exports.deletePortfolio = async (req, res) => {
 
     // Suppression du portfolio
     await Portfolio.deleteOne({ _id: id });
-
+    // Suppression du fichier dans cloudinary
+    await cloudinary.uploader.destroy(portfolio.file.publicId);
     res.status(200).json({ message: "Portfolio entry successfully deleted" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });

@@ -41,6 +41,7 @@ const companyRoutes = require("./routes/companyRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const sectorRoutes = require("./routes/sectorRoutes");
 const educationRoutes = require("./routes/educationRoute");
+const experienceRoutes = require("./routes/experienceRoutes");
 
 const port = process.env.PORT;
 dbConnect();
@@ -61,6 +62,7 @@ app.use("/api/company", companyRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/sector", sectorRoutes);
 app.use("/api/education", educationRoutes);
+app.use("/api/experience", experienceRoutes);
 
 //Gestion des erreurs
 app.use(notFound);

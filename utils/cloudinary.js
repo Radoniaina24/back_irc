@@ -39,7 +39,7 @@ const storage = new CloudinaryStorage({
       options.format = "jpg"; // Convertit toutes les images en JPG
     } else if (isPdf) {
       options.resource_type = "raw"; // Définit les PDFs comme fichiers bruts
-      options.format = "pdf"; // Supprime l'attribut format pour les PDFs
+      options.format = "pdf";
     }
     return options;
   },

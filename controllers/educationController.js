@@ -4,6 +4,7 @@ const Candidate = require("../models/candidateModel");
 // Create an education entry
 exports.createEducation = async (req, res) => {
   const userId = req.user.id; // Récupéré via le middleware d'authentification
+  // console.log("tafiditra");
   try {
     const { institution, degree, fieldOfStudy, startDate, endDate } = req.body;
     // Check if the candidate exists

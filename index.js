@@ -12,7 +12,7 @@ app.use(cookieParser());
 // ];
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: "https://international-recruit-agency.vercel.app",
   credentials: true, // Permet d'envoyer des cookies
 };
 app.use(cors(corsOptions));

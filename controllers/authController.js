@@ -33,7 +33,7 @@ async function login(req, res) {
       httpOnly: true, // Empêche l'accès au cookie via JavaScript
       secure: isProduction, // Seulement en HTTPS en production
       sameSite: isProduction ? "Strict" : "Lax", // Plus permissif en dev pour faciliter les tests
-      maxAge: 60 * 60 * 1000, // 1 heure
+      maxAge: 24 * 60 * 60 * 1000, // 1 jour
       path: "/", // Définit l'accès global au cookie
     });
     res.json({

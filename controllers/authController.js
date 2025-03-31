@@ -28,6 +28,7 @@ async function login(req, res) {
     await userFound.save(); // ⚠️ Toujours attendre la sauvegarde
 
     // Ajouter le token dans un cookie HttpOnly
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true, // Empêche l'accès au cookie via JavaScript
       secure: isProduction, // Seulement en HTTPS en production

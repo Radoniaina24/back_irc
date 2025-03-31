@@ -29,10 +29,11 @@ async function login(req, res) {
 
     // Ajouter le token dans un cookie HttpOnly
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // true en prod, false en dev
-      sameSite: "Strict", // Permet d'envoyer le cookie même en cross-origin
-      maxAge: 3600000, // 1 heure
+      httpOnly: true, // Empêche l'accès au cookie via JavaScript
+      secure: isProduction, // Seulement en HTTPS en production
+      sameSite: isProduction ? "Strict" : "Lax", // Plus permissif en dev pour faciliter les tests
+      maxAge: 60 * 60 * 1000, // 1 heure
+      path: "/", // Définit l'accès global au cookie
     });
     res.json({
       status: "success",

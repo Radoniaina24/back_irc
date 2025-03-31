@@ -5,29 +5,14 @@ const cors = require("cors");
 const { globalErrHandler, notFound } = require("./middlewares/globaErrHandler");
 const path = require("path");
 app.use(cookieParser());
-// CORS configuration
-// const allowedOrigins = [
-//   // "https://international-recruit-agency.vercel.app",
-//   "http://localhost:3000", // Ajout de localhost
-// ];
-
+app.use(express.urlencoded({ extended: true }));
 const corsOptions = {
   origin: "https://international-recruit-agency.vercel.app",
   credentials: true, // Permet d'envoyer des cookies
+  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
 };
 app.use(cors(corsOptions));
-// app.use(
-//   cors({
-//     origin: function (origin, callback) {
-//       if (!origin || allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("Not allowed by CORS"));
-//       }
-//     },
-//     credentials: true, // Si tu utilises les cookies ou les sessions
-//   })
-// );
 require("dotenv").config();
 const dbConnect = require("./config/dbConnect");
 

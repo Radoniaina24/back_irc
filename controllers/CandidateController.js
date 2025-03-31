@@ -221,6 +221,24 @@ const updateProfilCandidate = async (req, res) => {
     res.status(500).json({ message: "Erreur interne du serveur" });
   }
 };
+const getMe = async (req, res) => {
+  try {
+    const userId = req.user.id; // Assurez-vous que req.user.id est bien un ObjectId valide
+    const candidate = await Candidate.findOne({ user: userId }).populate(
+      "user"
+    );
+
+    if (!candidate) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+
+    res.status(200).json({ candidate });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
 module.exports = {
   createCandidate,
   getAllCandidates,
@@ -229,4 +247,5 @@ module.exports = {
   updateCandidate,
   changePassword,
   updateProfilCandidate,
+  getMe,
 };

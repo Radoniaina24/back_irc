@@ -5,6 +5,12 @@ const checkRole = require("../middlewares/checkRole");
 const candidateRoutes = express.Router();
 const candidateController = require("../controllers/CandidateController");
 candidateRoutes.get(
+  "/my-profile",
+  isLoggedIn,
+  checkRole(["candidate"]),
+  candidateController.getMe
+);
+candidateRoutes.get(
   "/",
   isLoggedIn,
   checkRole(["admin"]),

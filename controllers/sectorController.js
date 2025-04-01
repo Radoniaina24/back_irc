@@ -27,7 +27,7 @@ const getSectors = async (req, res) => {
     const totalPages = Math.ceil(totalSectors / limit);
 
     const sectors = await Sector.find(searchQuery)
-      .sort({ createdAt: -1 }) // Tri par date de création décroissante
+      .sort({ name: 1 }) // Tri par date de création décroissante
       .skip((page - 1) * limit)
       .limit(limit);
 

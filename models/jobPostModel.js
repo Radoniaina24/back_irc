@@ -5,10 +5,6 @@ const jobPostSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Recruiter",
     },
-    category: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-    },
     sector: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Sector",

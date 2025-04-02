@@ -17,6 +17,14 @@ const jobPostSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    missions: {
+      type: String,
+      trim: true,
+    },
+    candidate_profil: {
+      type: String,
+      trim: true,
+    },
     location: {
       type: String,
       trim: true,

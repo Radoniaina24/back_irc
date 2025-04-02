@@ -14,6 +14,8 @@ const createJobPost = async (req, res) => {
       studyLevels,
       skills,
       deadline,
+      candidate_profil,
+      missions,
     } = req.body;
     const userId = req.user.id; // Récupéré via le middleware d'authentification
     // Vérifier si le secteur existe
@@ -44,6 +46,8 @@ const createJobPost = async (req, res) => {
       studyLevels,
       skills,
       deadline,
+      candidate_profil,
+      missions,
     });
     await jobPost.save();
     res.status(201).json({ message: "Ad created successfully.", jobPost });
@@ -115,7 +119,7 @@ const getAllJobPosts = async (req, res) => {
       const contractType = Array.isArray(req.query.contractType)
         ? req.query.contractType
         : req.query.contractType.split(","); // Convertit "CDI,CDD" en ["CDI", "CDD"]
-      console.log(contractType);
+      // console.log(contractType);
       filters.contractType = { $in: contractType };
     }
     if (req.query.experienceRequired) {
@@ -159,7 +163,13 @@ const getAllJobPosts = async (req, res) => {
 };
 const getJobPostById = async (req, res) => {
   try {
-    const jobPost = await JobPost.findById(req.params.id).populate("recruiter");
+    const jobPost = await JobPost.findById(req.params.id)
+      .populate("sector", "name")
+      .populate({
+        path: "recruiter",
+        select: "companyName",
+        populate: { path: "user", select: "firstName lastName email" },
+      });
     if (!jobPost) return res.status(404).json({ message: "Ad not found." });
     res.status(200).json(jobPost);
   } catch (error) {
@@ -210,6 +220,8 @@ const updateJobPost = async (req, res) => {
       studyLevels,
       skills,
       deadline,
+      candidate_profil,
+      missions,
     } = req.body;
     const userId = req.user.id; // Récupéré via le middleware d'authentification
     // Vérifier si le secteur existe
@@ -247,6 +259,9 @@ const updateJobPost = async (req, res) => {
     jobPost.skills = skills || jobPost.skills;
     jobPost.deadline = deadline || jobPost.deadline;
     jobPost.remote = remote || jobPost.remote;
+    jobPost.candidate_profil = candidate_profil || jobPost.candidate_profil;
+    jobPost.missions = missions || jobPost.missions;
+
     await jobPost.save();
     res.status(200).json({ message: "Ad updated successfully.", jobPost });
   } catch (error) {

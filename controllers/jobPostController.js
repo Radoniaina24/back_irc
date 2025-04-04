@@ -155,7 +155,8 @@ const getAllJobPosts = async (req, res) => {
     const totalPages = Math.ceil(totalJobPosts / limit);
 
     // Si page demandée est au-delà du nombre de pages existant, on la ramène à la dernière page
-    const currentPage = Math.min(page, totalPages || 1);
+    // ⚠️ Si la page demandée dépasse le totalPages => revenir à la page 1
+    const currentPage = totalPages > 0 && page > totalPages ? 1 : page;
 
     // Récupération paginée des annonces
     const jobPosts = await JobPost.find(filters)

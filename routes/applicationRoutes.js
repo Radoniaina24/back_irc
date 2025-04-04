@@ -4,10 +4,12 @@ const applicationRoutes = express.Router();
 const applicationContollers = require("../controllers/appicationController");
 const isLoggedIn = require("../middlewares/isLoggedIn");
 const checkRole = require("../middlewares/checkRole");
+const { uploadFile } = require("../utils/cloudinary");
 applicationRoutes.post(
   "/:jobId",
   isLoggedIn,
   checkRole(["candidate"]),
+  uploadFile,
   asyncHandler(applicationContollers.applyToJob)
 );
 applicationRoutes.get(

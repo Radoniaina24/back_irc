@@ -3,6 +3,20 @@ const JobPost = require("../models/jobPostModel");
 const Recruiter = require("../models/recruiterModel");
 const Candidate = require("../models/candidateModel");
 const applyToJob = async (req, res) => {
+  if (!req.files) {
+    return res
+      .status(400)
+      .json({ message: "Veuillez télécharger les fichiers requis." });
+  }
+
+  const uploadedFiles = {};
+  Object.keys(req.files).forEach((key) => {
+    uploadedFiles[key] = {
+      url: req.files[key][0].path,
+      publicId: req.files[key][0].filename,
+      type: req.files[key][0].mimetype.startsWith("image/") ? "image" : "pdf",
+    };
+  });
   try {
     const { jobId } = req.params;
     const { coverLetter } = req.body;
@@ -37,6 +51,7 @@ const applyToJob = async (req, res) => {
       jobPost: jobId,
       recruiter: jobPost.recruiter,
       coverLetter,
+      file: uploadedFiles.file,
     });
 
     await application.save();
@@ -49,7 +64,14 @@ const applyToJob = async (req, res) => {
 };
 const getCandidateApplications = async (req, res) => {
   try {
-    const candidateId = req.user.id;
+    const userId = req.user.id;
+    // Vérifier que l'utilisateur est un candidate
+    const candidateId = await Candidate.findOne({ user: userId });
+    if (!candidateId) {
+      return res
+        .status(403)
+        .json({ message: "Accès refusé. Candidate requis." });
+    }
     // Récupérer toutes les candidature du candidat
     let { page = 1, limit = 10, search } = req.query;
     // Validation et conversion des paramètres en nombres
@@ -65,7 +87,7 @@ const getCandidateApplications = async (req, res) => {
         .populate({
           path: "jobPost",
           populate: { path: "recruiter" },
-          populate: { path: "category" },
+          populate: { path: "sector" },
         })
         .skip((page - 1) * limit)
         .limit(limit),

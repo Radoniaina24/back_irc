@@ -21,6 +21,11 @@ const applicationSchema = new mongoose.Schema(
       type: String,
       required: false, // Optionnel : lettre de motivation
     },
+    file: {
+      url: { type: String, required: true },
+      publicId: { type: String, required: true },
+      type: { type: String, required: true },
+    },
     status: {
       type: String,
       enum: ["pending", "reviewed", "accepted", "rejected"],

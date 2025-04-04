@@ -99,68 +99,95 @@ const getMyJobPosts = async (req, res) => {
 };
 const getAllJobPosts = async (req, res) => {
   try {
-    // Récupérer toutes les annonces créées par ce recruteur
-    let { page = 1, limit = 10, search, sectorId } = req.query;
+    // Récupération et validation des paramètres de requête
+    let {
+      page = 1,
+      limit = 10,
+      search,
+      sectorId,
+      contractType,
+      experienceRequired,
+      studyLevels,
+    } = req.query;
 
-    // Validation et conversion des paramètres en nombres
     page = Math.max(1, parseInt(page, 10) || 1);
-    limit = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100)); // Limite à 100 max
+    limit = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100)); // Limite max à 100
 
-    // Construction du filtre de recherche
+    // Construction dynamique des filtres
     const filters = {};
 
     if (search) {
-      filters.$or = [{ title: { $regex: search, $options: "i" } }];
+      filters.$or = [
+        { title: { $regex: search, $options: "i" } },
+        // Tu peux ajouter d'autres champs ici si nécessaire
+      ];
     }
-    if (sectorId && sectorId !== "") {
-      filters.sector = sectorId; // Assurez-vous que 'sector' est bien le champ dans votre modèle
+
+    if (sectorId) {
+      filters.sector = sectorId;
     }
-    if (req.query.contractType) {
-      const contractType = Array.isArray(req.query.contractType)
-        ? req.query.contractType
-        : req.query.contractType.split(","); // Convertit "CDI,CDD" en ["CDI", "CDD"]
-      // console.log(contractType);
-      filters.contractType = { $in: contractType };
+
+    if (contractType) {
+      const contractTypesArray = Array.isArray(contractType)
+        ? contractType
+        : contractType.split(",");
+      filters.contractType = { $in: contractTypesArray };
     }
-    if (req.query.experienceRequired) {
-      const experienceRequired = Array.isArray(req.query.experienceRequired)
-        ? req.query.experienceRequired
-        : req.query.experienceRequired.split(",");
-      // console.log(experienceRequired);
-      filters.experienceRequired = { $in: experienceRequired };
+
+    if (experienceRequired) {
+      const experienceArray = Array.isArray(experienceRequired)
+        ? experienceRequired
+        : experienceRequired.split(",");
+      filters.experienceRequired = { $in: experienceArray };
     }
-    if (req.query.studyLevels) {
-      const studyLevels = Array.isArray(req.query.studyLevels)
-        ? req.query.studyLevels
-        : req.query.studyLevels.split(",");
-      // console.log(studyLevels);
-      filters.studyLevels = { $in: studyLevels };
+
+    if (studyLevels) {
+      const studyLevelsArray = Array.isArray(studyLevels)
+        ? studyLevels
+        : studyLevels.split(",");
+      filters.studyLevels = { $in: studyLevelsArray };
     }
-    // Exécuter les requêtes en parallèle pour améliorer les performances
-    const [totalJobPosts, jobPosts] = await Promise.all([
-      JobPost.countDocuments(filters),
-      JobPost.find(filters)
-        .populate("sector", "name")
-        .populate({
-          path: "recruiter",
-          select: "companyName",
-          populate: { path: "user", select: "firstName lastName email" },
-        })
-        .skip((page - 1) * limit)
-        .limit(limit),
-    ]);
+
+    // Calcul du nombre total d'annonces correspondant aux filtres
+    const totalJobPosts = await JobPost.countDocuments(filters);
+
+    // Calcul du nombre total de pages
     const totalPages = Math.ceil(totalJobPosts / limit);
-    res.status(200).json({
+
+    // Si page demandée est au-delà du nombre de pages existant, on la ramène à la dernière page
+    const currentPage = Math.min(page, totalPages || 1);
+
+    // Récupération paginée des annonces
+    const jobPosts = await JobPost.find(filters)
+      .populate("sector", "name")
+      .populate({
+        path: "recruiter",
+        select: "companyName",
+        populate: {
+          path: "user",
+          select: "firstName lastName email",
+        },
+      })
+      .skip((currentPage - 1) * limit)
+      .limit(limit);
+
+    return res.status(200).json({
       success: true,
       totalJobPosts,
       totalPages,
-      currentPage: page,
+      currentPage,
       jobPosts,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error.", error: error.message });
+    console.error("Erreur lors de la récupération des annonces :", error);
+    return res.status(500).json({
+      success: false,
+      message: "Une erreur est survenue sur le serveur.",
+      error: error.message,
+    });
   }
 };
+
 const getJobPostById = async (req, res) => {
   try {
     const jobPost = await JobPost.findById(req.params.id)

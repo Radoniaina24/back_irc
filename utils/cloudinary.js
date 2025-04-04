@@ -22,17 +22,18 @@ const storage = new CloudinaryStorage({
       .replace(/\s+/g, "_");
 
     // Récupérer la date du jour (format YYYYMMDD)
-    const currentDate = new Date()
+    const currentDate = new Date();
+    const formattedDate = currentDate
       .toISOString()
-      .split("T")[0]
-      .replace(/-/g, "");
+      .replace(/[-:T.Z]/g, "")
+      .slice(0, 14);
 
     const isImage = file.mimetype.startsWith("image/");
     const isPdf = file.mimetype === "application/pdf";
 
     let options = {
       folder: "portfolio",
-      public_id: `${originalName}_${currentDate}`,
+      public_id: `${originalName}_${formattedDate}`,
     };
 
     if (isImage) {
@@ -49,6 +50,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage: storage });
 const uploadStudentPhoto = upload.single("photo");
 const uploadFile = upload.fields([{ name: "file", maxCount: 1 }]);
+
 module.exports = {
   uploadStudentPhoto,
   uploadFile,

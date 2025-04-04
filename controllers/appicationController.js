@@ -2,6 +2,7 @@ const Application = require("../models/applicationModel");
 const JobPost = require("../models/jobPostModel");
 const Recruiter = require("../models/recruiterModel");
 const Candidate = require("../models/candidateModel");
+const cloudinary = require("cloudinary").v2;
 const applyToJob = async (req, res) => {
   if (!req.files) {
     return res
@@ -40,11 +41,15 @@ const applyToJob = async (req, res) => {
     });
 
     if (existingApplication) {
+      // Suppression du fichier dans cloudinary
+      const resourceType = uploadedFiles.file.type === "pdf" ? "raw" : "image";
+      await cloudinary.uploader.destroy(uploadedFiles.file.publicId, {
+        resource_type: resourceType,
+      });
       return res
         .status(400)
         .json({ message: "Vous avez déjà postulé à cette annonce." });
     }
-
     // Créer une nouvelle candidature
     const application = new Application({
       candidate: candidate._id,

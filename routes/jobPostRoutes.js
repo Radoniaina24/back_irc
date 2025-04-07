@@ -34,6 +34,11 @@ jobPostRoutes.put(
   checkRole(["admin"]),
   asyncHandler(jobPostContollers.updateJobPostByStatus)
 );
+jobPostRoutes.get(
+  "/client",
+  asyncHandler(jobPostContollers.getAllJobPostsClient)
+);
 jobPostRoutes.get("/:id", asyncHandler(jobPostContollers.getJobPostById));
 jobPostRoutes.get("/", asyncHandler(jobPostContollers.getAllJobPosts));
+
 module.exports = jobPostRoutes;

@@ -188,6 +188,97 @@ const getAllJobPosts = async (req, res) => {
     });
   }
 };
+const getAllJobPostsClient = async (req, res) => {
+  try {
+    // Récupération et validation des paramètres de requête
+    let {
+      page = 1,
+      limit = 10,
+      search,
+      sectorId,
+      contractType,
+      experienceRequired,
+      studyLevels,
+    } = req.query;
+
+    page = Math.max(1, parseInt(page, 10) || 1);
+    limit = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100)); // Limite max à 100
+
+    // Initialisation des filtres avec permission autorisée
+    const filters = { permissions: "Allowed" };
+
+    if (search) {
+      filters.$or = [
+        { title: { $regex: search, $options: "i" } },
+        // Tu peux ajouter d'autres champs ici si nécessaire
+      ];
+    }
+
+    if (sectorId) {
+      filters.sector = sectorId;
+    }
+
+    if (contractType) {
+      const contractTypesArray = Array.isArray(contractType)
+        ? contractType
+        : contractType.split(",");
+      filters.contractType = { $in: contractTypesArray };
+    }
+
+    if (experienceRequired) {
+      const experienceArray = Array.isArray(experienceRequired)
+        ? experienceRequired
+        : experienceRequired.split(",");
+      filters.experienceRequired = { $in: experienceArray };
+    }
+
+    if (studyLevels) {
+      const studyLevelsArray = Array.isArray(studyLevels)
+        ? studyLevels
+        : studyLevels.split(",");
+      filters.studyLevels = { $in: studyLevelsArray };
+    }
+
+    // Calcul du nombre total d'annonces correspondant aux filtres
+    const totalJobPosts = await JobPost.countDocuments(filters);
+
+    // Calcul du nombre total de pages
+    const totalPages = Math.ceil(totalJobPosts / limit);
+
+    // Si page demandée est au-delà du nombre de pages existant, on la ramène à la dernière page
+    // ⚠️ Si la page demandée dépasse le totalPages => revenir à la page 1
+    const currentPage = totalPages > 0 && page > totalPages ? 1 : page;
+
+    // Récupération paginée des annonces
+    const jobPosts = await JobPost.find(filters)
+      .populate("sector", "name")
+      .populate({
+        path: "recruiter",
+        select: "companyName",
+        populate: {
+          path: "user",
+          select: "firstName lastName email",
+        },
+      })
+      .skip((currentPage - 1) * limit)
+      .limit(limit);
+
+    return res.status(200).json({
+      success: true,
+      totalJobPosts,
+      totalPages,
+      currentPage,
+      jobPosts,
+    });
+  } catch (error) {
+    console.error("Erreur lors de la récupération des annonces :", error);
+    return res.status(500).json({
+      success: false,
+      message: "Une erreur est survenue sur le serveur.",
+      error: error.message,
+    });
+  }
+};
 
 const getJobPostById = async (req, res) => {
   try {
@@ -323,4 +414,5 @@ module.exports = {
   deleteJobPost,
   updateJobPost,
   updateJobPostByStatus,
+  getAllJobPostsClient,
 };

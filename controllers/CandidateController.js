@@ -99,13 +99,13 @@ const getCandidateById = async (req, res) => {
 const updateCandidate = async (req, res) => {
   const { id } = req.params; // L'ID du candidat à mettre à jour
   const { permissions } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
 
   try {
     // Vérification que le candidat existe
     const candidate = await Candidate.findById(id).populate("user");
     if (!candidate) {
-      return res.status(404).json({ message: "Recruteur non trouvé" });
+      return res.status(404).json({ message: "Candidate not found" });
     }
     // Mise à jour de la société dans la collection Candidate
     if (permissions) {
@@ -237,6 +237,20 @@ const getMe = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
+
+const getPermission = async (req, res) => {
+  try {
+    const userId = req.user.id; // ID de l'utilisateur obtenu par middleware d'authentification
+    const candidate = await Candidate.findOne({ user: userId });
+    if (!candidate) {
+      return res.status(404).json({ message: "Candidate not found" });
+    }
+    res.status(200).json({ candidate });
+  } catch (error) {
+    // console.error("Erreur lors du changement de mot de passe :", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 module.exports = {
   createCandidate,
   getAllCandidates,
@@ -246,4 +260,5 @@ module.exports = {
   changePassword,
   updateProfilCandidate,
   getMe,
+  getPermission,
 };

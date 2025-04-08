@@ -4,11 +4,11 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 const checkRole = require("../middlewares/checkRole");
 const candidateRoutes = express.Router();
 const candidateController = require("../controllers/CandidateController");
-candidateRoutes.post(
-  "/update_profil",
+candidateRoutes.get(
+  "/permission",
   isLoggedIn,
   checkRole(["candidate", "admin"]),
-  candidateController.updateProfilCandidate
+  candidateController.getPermission
 );
 candidateRoutes.get(
   "/my-profile",

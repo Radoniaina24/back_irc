@@ -108,6 +108,7 @@ const getAllJobPosts = async (req, res) => {
       contractType,
       experienceRequired,
       studyLevels,
+      permissions,
     } = req.query;
 
     page = Math.max(1, parseInt(page, 10) || 1);
@@ -125,6 +126,9 @@ const getAllJobPosts = async (req, res) => {
 
     if (sectorId) {
       filters.sector = sectorId;
+    }
+    if (permissions) {
+      filters.permissions = permissions;
     }
 
     if (contractType) {

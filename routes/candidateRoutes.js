@@ -4,6 +4,12 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 const checkRole = require("../middlewares/checkRole");
 const candidateRoutes = express.Router();
 const candidateController = require("../controllers/CandidateController");
+candidateRoutes.post(
+  "/update_profil",
+  isLoggedIn,
+  checkRole(["candidate", "admin"]),
+  candidateController.updateProfilCandidate
+);
 candidateRoutes.get(
   "/my-profile",
   isLoggedIn,
@@ -29,7 +35,7 @@ candidateRoutes.post(
 candidateRoutes.put(
   "/update/:id",
   isLoggedIn,
-  checkRole(["admin, candidate"]),
+  checkRole(["admin", "candidate"]),
   asyncHandler(candidateController.updateCandidate)
 );
 candidateRoutes.delete(
@@ -44,10 +50,5 @@ candidateRoutes.post(
   checkRole(["candidate"]),
   candidateController.changePassword
 );
-candidateRoutes.post(
-  "/update_profil",
-  isLoggedIn,
-  checkRole(["candidate"]),
-  candidateController.updateProfilCandidate
-);
+
 module.exports = candidateRoutes;

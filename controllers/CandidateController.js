@@ -98,7 +98,8 @@ const getCandidateById = async (req, res) => {
 };
 const updateCandidate = async (req, res) => {
   const { id } = req.params; // L'ID du candidat à mettre à jour
-  const { cv } = req.body; // Nouvelle société ou autres données à mettre à jour
+  const { permissions } = req.body;
+  console.log(req.body);
 
   try {
     // Vérification que le candidat existe
@@ -106,31 +107,11 @@ const updateCandidate = async (req, res) => {
     if (!candidate) {
       return res.status(404).json({ message: "Recruteur non trouvé" });
     }
-
-    // Validation des données (exemple : la société ne peut pas être vide)
-    if (cv && cv.trim() === "") {
-      return res
-        .status(400)
-        .json({ message: "Le nom de la société ne peut pas être vide" });
-    }
-
     // Mise à jour de la société dans la collection Candidate
-    if (cv) {
-      candidate.cv = cv;
+    if (permissions) {
+      candidate.permissions = permissions || candidate.permissions;
       await candidate.save(); // Sauvegarde des modifications
     }
-
-    // Vous pouvez également mettre à jour d'autres informations liées à l'utilisateur, si nécessaire
-    // Par exemple, si vous souhaitez mettre à jour les informations de l'utilisateur :
-    const { firstName, lastName, email } = req.body;
-    const user = candidate.user;
-
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-    if (email) user.email = email;
-
-    await user.save(); // Sauvegarde des modifications de l'utilisateur
-
     res
       .status(200)
       .json({ message: "Candidat mis à jour avec succès", candidate });
@@ -204,16 +185,7 @@ const changePassword = async (req, res) => {
 
 const updateProfilCandidate = async (req, res) => {
   const userId = req.user.id; // L'ID du candidat à mettre à jour obtenu par middlware
-  const {
-    phone,
-    address,
-    resume,
-    skills,
-    experience,
-    education,
-    certifications,
-    languages,
-  } = req.body;
+  const { phone, address, permissions } = req.body;
   try {
     // Vérification que le candidat existe
     const candidate = await Candidate.findOne({ user: userId }).populate(
@@ -226,12 +198,7 @@ const updateProfilCandidate = async (req, res) => {
 
     candidate.phone = phone || candidate.phone;
     candidate.address = address || candidate.address;
-    candidate.resume = resume || candidate.resume;
-    candidate.skills = skills || candidate.skills;
-    candidate.experience = experience || candidate.experience;
-    candidate.education = education || candidate.education;
-    candidate.certifications = certifications || candidate.certifications;
-    candidate.languages = languages || candidate.languages;
+    candidate.permissions = permissions || candidate.permissions;
 
     await candidate.save(); // Sauvegarde des modifications
 

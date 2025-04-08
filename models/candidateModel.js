@@ -6,6 +6,11 @@ const candidateSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    permissions: {
+      type: String,
+      enum: ["Pending", "Allowed", "Denied"],
+      default: "Pending",
+    },
     phone: {
       type: String,
       trim: true,

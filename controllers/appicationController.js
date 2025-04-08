@@ -179,10 +179,41 @@ const getRecruiterApplications = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
+const updateApplicationsById = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const userId = req.user.id;
+
+    // Check if the user is a recruiter
+    const recruiter = await Recruiter.findOne({ user: userId });
+    if (!recruiter) {
+      return res
+        .status(403)
+        .json({ message: "Access denied. Recruiter required." });
+    }
+
+    // Find the application related to the recruiter
+    const application = await Application.findOne({ recruiter: recruiter._id });
+    if (!application) {
+      return res.status(404).json({ message: "Application not found." });
+    }
+
+    // Update the application status
+    application.status = status || application.status;
+    await application.save();
+
+    return res
+      .status(200)
+      .json({ message: "Application updated successfully." });
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   applyToJob,
   getCandidateApplications,
   deleteApplication,
   getRecruiterApplications,
+  updateApplicationsById,
 };

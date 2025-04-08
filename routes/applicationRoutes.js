@@ -30,4 +30,10 @@ applicationRoutes.get(
   checkRole(["recruiter"]),
   asyncHandler(applicationContollers.getRecruiterApplications)
 );
+applicationRoutes.put(
+  "/update/:id",
+  isLoggedIn,
+  checkRole(["recruiter"]),
+  asyncHandler(applicationContollers.updateApplicationsById)
+);
 module.exports = applicationRoutes;

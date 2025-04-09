@@ -83,17 +83,24 @@ const getCandidateApplications = async (req, res) => {
         .json({ message: "Access denied. Candidate access required." });
     }
 
-    let { page = 1, limit = 10, search } = req.query;
+    let { page = 1, limit = 10, search, permissions } = req.query;
     page = Math.max(1, parseInt(page, 10) || 1);
     limit = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100));
+
+    // Initialisation des filtres avec permission autorisée
+    const filters = {};
 
     const searchQuery = search
       ? { $or: [{ coverLetter: { $regex: search, $options: "i" } }] }
       : {};
 
+    if (permissions) {
+      filters.status = permissions;
+    }
+
     const [totalJobApplication, jobApplication] = await Promise.all([
-      Application.countDocuments({ candidate: candidate._id, ...searchQuery }),
-      Application.find({ candidate: candidate._id, ...searchQuery })
+      Application.countDocuments({ candidate: candidate._id, ...filters }),
+      Application.find({ candidate: candidate._id, ...filters })
         .populate({
           path: "jobPost",
           populate: [{ path: "recruiter" }, { path: "sector" }],
@@ -163,17 +170,24 @@ const getRecruiterApplications = async (req, res) => {
         .json({ message: "Access denied. Recruiter access required." });
     }
 
-    let { page = 1, limit = 10, search } = req.query;
+    let { page = 1, limit = 10, search, permissions } = req.query;
     page = Math.max(1, parseInt(page, 10) || 1);
     limit = Math.max(1, Math.min(parseInt(limit, 10) || 10, 100));
+
+    // Initialisation des filtres avec permission autorisée
+    const filters = {};
 
     const searchQuery = search
       ? { $or: [{ status: { $regex: search, $options: "i" } }] }
       : {};
 
+    if (permissions) {
+      filters.status = permissions;
+    }
+    // console.log(permissions);
     const [totalJobApplication, jobApplication] = await Promise.all([
-      Application.countDocuments({ recruiter: recruiter._id, ...searchQuery }),
-      Application.find({ recruiter: recruiter._id, ...searchQuery })
+      Application.countDocuments({ recruiter: recruiter._id, ...filters }),
+      Application.find({ recruiter: recruiter._id, ...filters })
         .populate({
           path: "candidate",
           populate: { path: "user", select: "lastName firstName email" },
@@ -205,9 +219,10 @@ const getRecruiterApplications = async (req, res) => {
 
 const updateApplicationsById = async (req, res, next) => {
   try {
+    const { id } = req.params;
     const { status } = req.body;
     const userId = req.user.id;
-
+    // console.log(id);
     const recruiter = await Recruiter.findOne({ user: userId });
     if (!recruiter) {
       return res
@@ -215,7 +230,10 @@ const updateApplicationsById = async (req, res, next) => {
         .json({ message: "Access denied. Recruiter access required." });
     }
 
-    const application = await Application.findOne({ recruiter: recruiter._id });
+    const application = await Application.findOne({
+      recruiter: recruiter._id,
+      _id: id,
+    });
     if (!application) {
       return res.status(404).json({ message: "Application not found." });
     }
@@ -229,14 +247,6 @@ const updateApplicationsById = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-
-module.exports = {
-  applyToJob,
-  getCandidateApplications,
-  deleteApplication,
-  getRecruiterApplications,
-  updateApplicationsById,
 };
 
 module.exports = {

@@ -4,6 +4,7 @@ const isLoggedIn = require("../middlewares/isLoggedIn");
 const checkRole = require("../middlewares/checkRole");
 const candidateRoutes = express.Router();
 const candidateController = require("../controllers/CandidateController");
+
 candidateRoutes.get(
   "/permission",
   isLoggedIn,
@@ -27,6 +28,12 @@ candidateRoutes.get(
   isLoggedIn,
   checkRole(["admin"]),
   candidateController.getCandidateById
+);
+candidateRoutes.get(
+  "/information/:id",
+  isLoggedIn,
+  checkRole(["admin"]),
+  candidateController.getInfoCandidate
 );
 candidateRoutes.post(
   "/register",

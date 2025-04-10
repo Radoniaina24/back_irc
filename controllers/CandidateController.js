@@ -1,6 +1,10 @@
 const Candidate = require("../models/candidateModel");
 const User = require("../models/userModel");
+const Education = require("../models/educationModel");
 const bcrypt = require("bcrypt");
+const Experience = require("../models/experienceModel");
+const Certification = require("../models/certificationModel");
+const Portfolio = require("../models/portfolioModel");
 const createCandidate = async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
@@ -251,6 +255,33 @@ const getPermission = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+const getInfoCandidate = async (req, res) => {
+  try {
+    // recupération du candidat
+    const candidate = await Candidate.findById(req.params.id).populate("user");
+    if (!candidate)
+      return res.status(404).json({ message: "Candidat not found" });
+
+    const education = await Education.find({ candidate: candidate._id });
+    const experience = await Experience.find({ candidate: candidate._id });
+    const certification = await Certification.find({
+      candidate: candidate._id,
+    });
+    const portfolio = await Portfolio.find({
+      candidate: candidate._id,
+    });
+    res.status(200).json({
+      candidate,
+      education,
+      experience,
+      certification,
+      portfolio,
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
 module.exports = {
   createCandidate,
   getAllCandidates,
@@ -261,4 +292,5 @@ module.exports = {
   updateProfilCandidate,
   getMe,
   getPermission,
+  getInfoCandidate,
 };
